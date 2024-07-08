@@ -98,7 +98,7 @@ fun AddNewJuiceComposable(juiceVendorViewModel: JuiceVendorViewModel) {
                 juiceVendorViewModel.addNewDrink(drink = drink)
                 juiceVendorViewModel.updateAddJuiceComposableVisibility(status = false)
             }
-        }) {
+        }, enabled = juiceName.isNotEmpty(), modifier = Modifier.fillMaxWidth(0.2f)) {
             Text("Save")
         }
     }
