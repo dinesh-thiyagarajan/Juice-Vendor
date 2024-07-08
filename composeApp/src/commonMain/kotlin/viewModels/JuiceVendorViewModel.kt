@@ -18,6 +18,9 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
         listOf()
     )
 
+    val totalOrdersCount: StateFlow<Int> get() = _totalOrdersCount
+    private val _totalOrdersCount: MutableStateFlow<Int> = MutableStateFlow(0)
+
     /** TODO
      * Replace this with proper navigation and remove this
      **/
@@ -33,7 +36,16 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
     suspend fun getDrinkOrders() {
         viewModelScope.launch(Dispatchers.IO) {
             _drinks.value = juiceVendorRepository.getDrinkOrders()
+            calculateTotalOrdersCount(_drinks.value)
         }
+    }
+
+    private fun calculateTotalOrdersCount(drinks: List<Drink>) {
+        var orderCount = 0
+        drinks.forEach { drink ->
+            orderCount += drink.orderCount
+        }
+        _totalOrdersCount.value = orderCount
     }
 
     suspend fun addNewDrink(drink: Drink) {
