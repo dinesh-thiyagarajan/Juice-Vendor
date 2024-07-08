@@ -8,8 +8,8 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.request
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
@@ -38,16 +38,16 @@ class JuiceVendorRepository {
             val jsonElement: JsonElement = Json.parseToJsonElement(responseBody.bodyAsText())
             val values = jsonElement.jsonObject.values.toList()
             values.forEach { item ->
-                (item as JsonArray).toList().forEach { drinkItem ->
+                (item as JsonObject).toList().forEach { drinkItem ->
                     try {
                         val drink = Drink(
-                            drinkId = drinkItem.jsonObject["drinkId"]?.jsonPrimitive?.contentOrNull
+                            drinkId = drinkItem.second.jsonObject.get("drinkId")?.jsonPrimitive?.contentOrNull
                                 ?: throw (Exception("Missing drinkId")),
-                            drinkName = drinkItem.jsonObject["drinkName"]?.jsonPrimitive?.contentOrNull
+                            drinkName = drinkItem.second.jsonObject.get("drinkName")?.jsonPrimitive?.contentOrNull
                                 ?: throw Exception("Missing drinkName"),
-                            drinkImage = drinkItem.jsonObject["drinkImage"]?.jsonPrimitive?.contentOrNull
+                            drinkImage = drinkItem.second.jsonObject.get("drinkImage")?.jsonPrimitive?.contentOrNull
                                 ?: throw Exception("Missing drinkImage"),
-                            orderCount = drinkItem.jsonObject["itemCount"]?.jsonPrimitive?.int
+                            orderCount = drinkItem.second.jsonObject.get("orderCount")?.jsonPrimitive?.int
                                 ?: throw (Exception("Missing itemCount")),
                         )
                         drinksList.add(drink)

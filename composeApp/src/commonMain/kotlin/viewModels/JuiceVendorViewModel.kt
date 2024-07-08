@@ -26,17 +26,11 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
         false
     )
 
-    init {
-        viewModelScope.launch {
-            getDrinksList()
-        }
-    }
-
     fun updateAddJuiceComposableVisibility(status: Boolean) {
         _showAddJuiceComposable.value = status
     }
 
-    private suspend fun getDrinksList() {
+    suspend fun getDrinkOrders() {
         viewModelScope.launch(Dispatchers.IO) {
             _drinks.value = juiceVendorRepository.getDrinkOrders()
         }

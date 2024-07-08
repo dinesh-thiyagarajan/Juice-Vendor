@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -16,6 +17,11 @@ import data.Drink
 
 @Composable
 fun JuiceListComposable(juiceVendorViewModel: JuiceVendorViewModel) {
+
+    LaunchedEffect(juiceVendorViewModel){
+        juiceVendorViewModel.getDrinkOrders()
+    }
+
     val drinks = juiceVendorViewModel.drinks.collectAsState()
 
     LazyColumn(
