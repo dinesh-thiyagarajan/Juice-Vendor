@@ -6,6 +6,7 @@ import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
+import io.ktor.client.statement.request
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -65,11 +66,12 @@ class JuiceVendorRepository {
 
     suspend fun addNewDrink(drink: Drink, collection: String) {
         try {
-            val responseBody = httpClient
+            val response = httpClient
                 .post("${DATABASE_URL}/${collection}.json") {
                     header("Content-Type", "application/json")
                     setBody(drink)
                 }
+            println(response.request)
         } catch (ex: Exception) {
             // handle http, socket exceptions
             // TODO remove this try catch and handle this via interceptors

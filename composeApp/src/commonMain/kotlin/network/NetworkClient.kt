@@ -17,6 +17,7 @@ val httpClient = HttpClient {
             prettyPrint = true
             isLenient = true
             ignoreUnknownKeys = true
+            encodeDefaults = true // Ensure default values are encoded
         })
     }
     install(WebSockets)
