@@ -44,7 +44,7 @@ fun JuiceItem(drink: Drink) {
                 text = drink.drinkName,
                 modifier = Modifier.weight(1f)
             )
-            Text(text = drink.itemCount.toString())
+            Text(text = drink.orderCount.toString())
         }
     }
 }
