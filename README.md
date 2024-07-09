@@ -4,7 +4,11 @@
 
 # Screenshots
 
-
+<p align="center">
+  <img src="https://github.com/dinesh-thiyagarajan/Juice-Vendor/assets/17405840/dd698747-1003-4340-99e5-b99c2891f2d7" width="250" alt="Juice Vendor Landing Screen"/>
+  <img src="https://github.com/dinesh-thiyagarajan/Juice-Vendor/assets/17405840/72e6f40e-3a08-4027-ae1a-5e88fa9d8bf5" width="250" alt="Juice Vendor Report Screen"/>
+  <img src="https://github.com/dinesh-thiyagarajan/Juice-Vendor/assets/17405840/8841457d-05d4-4deb-85f9-13f166030142" width="250" alt="Juice Vendor Add New Juice Screen"/>
+</p>
 
 # Setup Instructions
 
