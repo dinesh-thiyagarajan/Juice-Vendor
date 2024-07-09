@@ -5,12 +5,14 @@ import androidx.lifecycle.viewModelScope
 import data.Drink
 import data.Report
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import repositories.JuiceVendorRepository
 
 const val JUICE_LIST_COLLECTION = "Juices"
+const val JUICE_REFRESH_TIME_IN_MS = 5000L
 
 class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorRepository) : ViewModel() {
 
@@ -46,6 +48,15 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
 
     fun updateReportsComposableVisibility(status: Boolean) {
         _showReportsComposable.value = status
+    }
+
+    suspend fun refreshDrinkOrdersWithAutoTimeInterval() {
+        viewModelScope.launch(Dispatchers.IO) {
+            while (true) {
+                getDrinkOrders()
+                delay(JUICE_REFRESH_TIME_IN_MS)
+            }
+        }
     }
 
     suspend fun getDrinkOrders() {

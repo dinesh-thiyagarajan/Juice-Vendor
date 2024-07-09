@@ -12,12 +12,14 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import data.Drink
+import kotlinx.coroutines.launch
 import viewModels.JuiceVendorViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -26,8 +28,12 @@ import java.util.Locale
 @Composable
 fun JuiceListComposable(juiceVendorViewModel: JuiceVendorViewModel) {
 
+    val coroutineScope = rememberCoroutineScope()
+
     LaunchedEffect(juiceVendorViewModel) {
-        juiceVendorViewModel.getDrinkOrders()
+        coroutineScope.launch {
+            juiceVendorViewModel.refreshDrinkOrdersWithAutoTimeInterval()
+        }
     }
 
     val drinks = juiceVendorViewModel.drinkOrders.collectAsState()
