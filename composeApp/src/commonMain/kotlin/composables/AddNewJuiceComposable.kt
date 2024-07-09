@@ -1,6 +1,8 @@
 package composables
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -86,20 +88,31 @@ fun AddNewJuiceComposable(juiceVendorViewModel: JuiceVendorViewModel) {
                 uncheckedThumbColor = MaterialTheme.colors.onSurface
             )
         )
-        Button(onClick = {
-            coroutineScope.launch {
-                bottomSheetState.hide()
-                val drink = Drink(
-                    drinkId = UUID.randomUUID().toString(),
-                    drinkName = juiceName,
-                    drinkImage = juiceImage,
-                    isAvailable = juiceAvailability
-                )
-                juiceVendorViewModel.addNewDrink(drink = drink)
-                juiceVendorViewModel.updateAddJuiceComposableVisibility(status = false)
+        Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth()) {
+            Button(onClick = {
+                coroutineScope.launch {
+                    bottomSheetState.hide()
+                    juiceVendorViewModel.updateAddJuiceComposableVisibility(status = false)
+                }
+            }, enabled = true, modifier = Modifier.fillMaxWidth(0.3f)) {
+                Text("Close")
             }
-        }, enabled = juiceName.isNotEmpty(), modifier = Modifier.fillMaxWidth(0.2f)) {
-            Text("Save")
+
+            Button(onClick = {
+                coroutineScope.launch {
+                    bottomSheetState.hide()
+                    val drink = Drink(
+                        drinkId = UUID.randomUUID().toString(),
+                        drinkName = juiceName,
+                        drinkImage = juiceImage,
+                        isAvailable = juiceAvailability
+                    )
+                    juiceVendorViewModel.addNewDrink(drink = drink)
+                    juiceVendorViewModel.updateAddJuiceComposableVisibility(status = false)
+                }
+            }, enabled = juiceName.isNotEmpty(), modifier = Modifier.fillMaxWidth(0.3f)) {
+                Text("Save")
+            }
         }
     }
 }

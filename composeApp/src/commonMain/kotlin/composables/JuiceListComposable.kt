@@ -30,7 +30,7 @@ fun JuiceListComposable(juiceVendorViewModel: JuiceVendorViewModel) {
         juiceVendorViewModel.getDrinkOrders()
     }
 
-    val drinks = juiceVendorViewModel.drinks.collectAsState()
+    val drinks = juiceVendorViewModel.drinkOrders.collectAsState()
     val totalOrdersCount = juiceVendorViewModel.totalOrdersCount.collectAsState()
     val formatter = SimpleDateFormat("dd-MM-yy", Locale.getDefault())
     Column(modifier = Modifier.padding(20.dp)) {
