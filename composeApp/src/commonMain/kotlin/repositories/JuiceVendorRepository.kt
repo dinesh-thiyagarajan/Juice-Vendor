@@ -41,14 +41,14 @@ class JuiceVendorRepository {
                 (item as JsonObject).toList().forEach { drinkItem ->
                     try {
                         val drink = Drink(
-                            drinkId = drinkItem.second.jsonObject.get("drinkId")?.jsonPrimitive?.contentOrNull
+                            drinkId = drinkItem.second.jsonObject["drinkId"]?.jsonPrimitive?.contentOrNull
                                 ?: throw (Exception("Missing drinkId")),
-                            drinkName = drinkItem.second.jsonObject.get("drinkName")?.jsonPrimitive?.contentOrNull
+                            drinkName = drinkItem.second.jsonObject["drinkName"]?.jsonPrimitive?.contentOrNull
                                 ?: throw Exception("Missing drinkName"),
-                            drinkImage = drinkItem.second.jsonObject.get("drinkImage")?.jsonPrimitive?.contentOrNull
+                            drinkImage = drinkItem.second.jsonObject["drinkImage"]?.jsonPrimitive?.contentOrNull
                                 ?: throw Exception("Missing drinkImage"),
-                            orderCount = drinkItem.second.jsonObject.get("orderCount")?.jsonPrimitive?.int
-                                ?: throw (Exception("Missing itemCount")),
+                            orderCount = drinkItem.second.jsonObject["orderCount"]?.jsonPrimitive?.int
+                                ?: throw (Exception("Missing orderCount")),
                         )
                         drinksList.add(drink)
                     } catch (e: Exception) {
@@ -60,6 +60,7 @@ class JuiceVendorRepository {
         } catch (ex: Exception) {
             // handle http, socket exceptions
             // TODO remove this try catch and handle this via interceptors
+            println("Error parsing drink item: ${ex.message}")
         }
         return drinksList
     }

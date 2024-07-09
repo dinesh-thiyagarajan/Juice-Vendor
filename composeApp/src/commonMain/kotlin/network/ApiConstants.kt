@@ -1,6 +1,8 @@
 package network
 
+import com.dineshworkspace.juicevendor.BuildKonfig
+
 object ApiConstants {
-    const val API_KEY = "AIzaSyCeccOw5TXfi1fF8FNY0XVqixfVILXGyWs"
-    const val DATABASE_URL = "https://juice-kadai-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    val API_KEY = BuildKonfig.FIREBASE_API_KEY.trim('\"')
+    val DATABASE_URL = BuildKonfig.FIREBASE_DATABASE_URL.trim('\"')
 }

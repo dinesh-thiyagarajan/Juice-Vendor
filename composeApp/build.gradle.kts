@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -8,6 +10,7 @@ plugins {
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlinxSerialization)
+    alias(libs.plugins.buildKonfig)
 }
 
 kotlin {
@@ -86,6 +89,19 @@ android {
     dependencies {
         implementation(libs.navigation.compose)
         debugImplementation(compose.uiTooling)
+    }
+}
+
+buildkonfig {
+    packageName = "com.dineshworkspace.juicevendor"
+
+    defaultConfigs {
+        val firebaseApiKey: String = gradleLocalProperties(rootDir).getProperty("FIREBASE_API_KEY")
+        val firebaseDatabaseUrl: String =
+            gradleLocalProperties(rootDir).getProperty("FIREBASE_DATABASE_URL")
+
+        buildConfigField(STRING, "FIREBASE_API_KEY", firebaseApiKey)
+        buildConfigField(STRING, "FIREBASE_DATABASE_URL", firebaseDatabaseUrl)
     }
 }
 
