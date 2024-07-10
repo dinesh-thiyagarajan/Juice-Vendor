@@ -101,7 +101,6 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
                     )
                 }
             }
-
             _reportMap.value = reportMap
         }
     }
