@@ -1,12 +1,14 @@
 package com.dineshworkspace.juicevendor
 
 import JuiceVendorApp
-import viewModels.JuiceVendorViewModel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.lifecycle.viewmodel.compose.viewModel
-import repositories.JuiceVendorRepository
+import auth.repositories.AuthRepository
+import auth.viewModels.AuthViewModel
+import juices.repositories.JuiceVendorRepository
+import juices.viewModels.JuiceVendorViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -18,7 +20,13 @@ class MainActivity : ComponentActivity() {
                     JuiceVendorRepository()
                 )
             }
-            JuiceVendorApp(juiceKadaiViewModel)
+
+            val authViewModel: AuthViewModel = viewModel {
+                AuthViewModel(
+                    AuthRepository()
+                )
+            }
+            JuiceVendorApp(juiceKadaiViewModel, authViewModel)
         }
     }
 }

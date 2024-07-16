@@ -1,4 +1,4 @@
-package composables
+package juices.composables
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -35,11 +35,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import data.Drink
+import juices.viewModels.JuiceVendorViewModel
 import juicevendor.composeapp.generated.resources.Res
 import juicevendor.composeapp.generated.resources.ic_close
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
-import viewModels.JuiceVendorViewModel
 import java.util.UUID
 
 @OptIn(ExperimentalMaterialApi::class)

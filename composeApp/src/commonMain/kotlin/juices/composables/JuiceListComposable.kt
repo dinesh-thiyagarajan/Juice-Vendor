@@ -1,4 +1,4 @@
-package composables
+package juices.composables
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,8 +19,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import data.Drink
+import data.Order
+import juices.viewModels.JuiceVendorViewModel
 import kotlinx.coroutines.launch
-import viewModels.JuiceVendorViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -36,7 +37,7 @@ fun JuiceListComposable(juiceVendorViewModel: JuiceVendorViewModel) {
         }
     }
 
-    val drinks = juiceVendorViewModel.drinkOrders.collectAsState()
+    val drinks = juiceVendorViewModel.orders.collectAsState()
     val totalOrdersCount = juiceVendorViewModel.totalOrdersCount.collectAsState()
     val formatter = SimpleDateFormat("dd-MM-yy", Locale.getDefault())
     Column(modifier = Modifier.padding(20.dp)) {
@@ -52,7 +53,7 @@ fun JuiceListComposable(juiceVendorViewModel: JuiceVendorViewModel) {
             modifier = Modifier.fillMaxSize()
         ) {
             items(drinks.value.size) { index ->
-                JuiceItem(drink = drinks.value[index])
+                JuiceItem(order = drinks.value[index])
             }
         }
     }
@@ -60,7 +61,7 @@ fun JuiceListComposable(juiceVendorViewModel: JuiceVendorViewModel) {
 
 
 @Composable
-fun JuiceItem(drink: Drink) {
+fun JuiceItem(order: Order) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -72,10 +73,10 @@ fun JuiceItem(drink: Drink) {
                 .fillMaxWidth()
         ) {
             Text(
-                text = drink.drinkName,
+                text = order.drinkName,
                 modifier = Modifier.weight(1f)
             )
-            Text(text = drink.orderCount.toString())
+            Text(text = order.orderCount.toString())
         }
     }
 }

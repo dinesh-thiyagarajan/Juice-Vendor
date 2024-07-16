@@ -1,23 +1,23 @@
-package viewModels
+package juices.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import data.Drink
+import data.Order
 import data.Report
+import juices.repositories.JuiceVendorRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import repositories.JuiceVendorRepository
 
 const val JUICE_LIST_COLLECTION = "Juices"
 const val JUICE_REFRESH_TIME_IN_MS = 5000L
 
 class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorRepository) : ViewModel() {
 
-    val drinkOrders: StateFlow<List<Drink>> get() = _drinkOrders
-    private val _drinkOrders: MutableStateFlow<List<Drink>> = MutableStateFlow(
+    val orders: StateFlow<List<Order>> get() = _orders
+    private val _orders: MutableStateFlow<List<Order>> = MutableStateFlow(
         listOf()
     )
 
@@ -52,23 +52,22 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
 
     suspend fun refreshDrinkOrdersWithAutoTimeInterval() {
         viewModelScope.launch(Dispatchers.IO) {
-            while (true) {
-                getDrinkOrders()
-                delay(JUICE_REFRESH_TIME_IN_MS)
-            }
+            getDrinkOrders()
         }
     }
 
     suspend fun getDrinkOrders() {
         viewModelScope.launch(Dispatchers.IO) {
-            _drinkOrders.value = juiceVendorRepository.getDrinkOrders().reversed()
-            calculateTotalOrdersCount(_drinkOrders.value)
+            juiceVendorRepository.getDrinkOrders().data?.reversed()?.let {
+                _orders.value = it
+                calculateTotalOrdersCount(it)
+            }
         }
     }
 
-    private fun calculateTotalOrdersCount(drinks: List<Drink>) {
+    private fun calculateTotalOrdersCount(orders: List<Order>) {
         var orderCount = 0
-        drinks.forEach { drink ->
+        orders.forEach { drink ->
             orderCount += drink.orderCount
         }
         _totalOrdersCount.value = orderCount
@@ -84,7 +83,7 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
         viewModelScope.launch(Dispatchers.Default) {
             val reportMap: HashMap<String, Report> = hashMapOf()
 
-            for (drink in drinkOrders.value) {
+            for (drink in orders.value) {
                 val currentReport = reportMap[drink.drinkId]
                 if (currentReport == null) {
                     // If no report exists for this drinkId, create a new Report object

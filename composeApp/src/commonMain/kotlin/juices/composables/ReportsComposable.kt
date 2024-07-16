@@ -1,4 +1,4 @@
-package composables
+package juices.composables
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -29,6 +29,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import juices.viewModels.JuiceVendorViewModel
 import juicevendor.composeapp.generated.resources.Res
 import juicevendor.composeapp.generated.resources.ic_apple
 import juicevendor.composeapp.generated.resources.ic_close
@@ -40,7 +41,6 @@ import juicevendor.composeapp.generated.resources.ic_watermelon
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
-import viewModels.JuiceVendorViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

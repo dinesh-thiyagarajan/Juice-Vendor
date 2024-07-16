@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlinxSerialization)
     alias(libs.plugins.buildKonfig)
+    id("com.google.gms.google-services")
 }
 
 kotlin {
@@ -39,13 +40,11 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
 
-            // ktor for networking
-            implementation(libs.ktor.client.core)
-            implementation(libs.ktor.client.cio)
-            implementation(libs.ktor.client.serialization)
-            implementation(libs.ktor.client.content.negotiation)
-            implementation(libs.ktor.serialization.kotlinx.json.v200)
+            // Firebase Auth and Realtime DB Dependencies
+            implementation(libs.gitlive.firebase.auth)
+            implementation(libs.firebase.database)
             implementation(libs.androidx.lifecycle.viewmodel)
+
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
@@ -96,12 +95,26 @@ buildkonfig {
     packageName = "com.dineshworkspace.juicevendor"
 
     defaultConfigs {
-        val firebaseApiKey: String = gradleLocalProperties(rootDir).getProperty("FIREBASE_API_KEY")
-        val firebaseDatabaseUrl: String =
-            gradleLocalProperties(rootDir).getProperty("FIREBASE_DATABASE_URL")
+        val projectId: String =
+            gradleLocalProperties(rootDir).getProperty("PROJECT_ID")
 
-        buildConfigField(STRING, "FIREBASE_API_KEY", firebaseApiKey)
-        buildConfigField(STRING, "FIREBASE_DATABASE_URL", firebaseDatabaseUrl)
+        val firebaseDatabaseUrl: String =
+            gradleLocalProperties(rootDir).getProperty("FIREBASE_DB_URL")
+
+        val appId: String =
+            gradleLocalProperties(rootDir).getProperty("APP_ID")
+
+        val apiKey: String =
+            gradleLocalProperties(rootDir).getProperty("API_KEY")
+
+        val printHttpLogs: String =
+            gradleLocalProperties(rootDir).getProperty("PRINT_HTTP_LOGS")
+
+        buildConfigField(STRING, "PROJECT_ID", projectId)
+        buildConfigField(STRING, "FIREBASE_DB_URL", firebaseDatabaseUrl)
+        buildConfigField(STRING, "APP_ID", appId)
+        buildConfigField(STRING, "API_KEY", apiKey)
+        buildConfigField(STRING, "PRINT_HTTP_LOGS", printHttpLogs)
     }
 }
 
