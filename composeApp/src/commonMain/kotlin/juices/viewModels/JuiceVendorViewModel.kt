@@ -7,6 +7,7 @@ import data.Order
 import data.Report
 import juices.repositories.JuiceVendorRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -29,9 +30,6 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
         hashMapOf()
     )
 
-    /** TODO
-     * Replace this with proper navigation and remove this
-     **/
     val showAddJuiceComposable: StateFlow<Boolean> get() = _showAddJuiceComposable
     private val _showAddJuiceComposable: MutableStateFlow<Boolean> = MutableStateFlow(
         false
@@ -52,7 +50,10 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
 
     suspend fun refreshDrinkOrdersWithAutoTimeInterval() {
         viewModelScope.launch(Dispatchers.IO) {
-            getDrinkOrders()
+            while (true) {
+                getDrinkOrders()
+                delay(JUICE_REFRESH_TIME_IN_MS)
+            }
         }
     }
 

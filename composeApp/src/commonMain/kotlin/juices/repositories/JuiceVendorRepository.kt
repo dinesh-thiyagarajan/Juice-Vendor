@@ -23,7 +23,7 @@ class JuiceVendorRepository(private val firebaseDatabase: FirebaseDatabase = Fir
         return getDrinkOrders(formatter.format(Date()))
     }
 
-    private suspend fun getDrinkOrders(collection: String): Response<List<Order>> {
+    private fun getDrinkOrders(collection: String): Response<List<Order>> {
         val ordersList: MutableList<Order> = mutableListOf()
         try {
             val ref = firebaseDatabase.reference("/$collection")
@@ -47,32 +47,6 @@ class JuiceVendorRepository(private val firebaseDatabase: FirebaseDatabase = Fir
         } catch (ex: Exception) {
             return Response(status = Status.Error, message = ex.message)
         }
-    }
-
-
-    suspend fun subscribeToDrinkOrders(collection: String) = flow<Response<Status>> {
-        val collectionReference = firebaseDatabase.reference("/$collection")
-        collectionReference.android.addChildEventListener(object : ChildEventListener {
-            override fun onChildAdded(dataSnapshot: DataSnapshot, p1: String?) {
-
-            }
-
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot) {
-
-            }
-
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-
-            }
-
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
-        })
     }
 
     suspend fun addNewDrink(drink: Drink, collection: String) {
