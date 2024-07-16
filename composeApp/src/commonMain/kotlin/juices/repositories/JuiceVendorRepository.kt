@@ -1,9 +1,6 @@
 package juices.repositories
 
 import com.google.android.gms.tasks.Tasks
-import com.google.firebase.database.ChildEventListener
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import data.Drink
 import data.Order
 import data.Response
@@ -11,7 +8,6 @@ import data.Status
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.database.FirebaseDatabase
 import dev.gitlive.firebase.database.database
-import kotlinx.coroutines.flow.flow
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -51,7 +47,15 @@ class JuiceVendorRepository(private val firebaseDatabase: FirebaseDatabase = Fir
 
     suspend fun addNewDrink(drink: Drink, collection: String) {
         try {
-            firebaseDatabase.reference("/$collection").setValue(drink) {}
+            val drinkMap = mapOf<String, Any>(
+                "drinkId" to drink.drinkId,
+                "drinkImage" to drink.drinkImage,
+                "drinkName" to drink.drinkName,
+                "isAvailable" to drink.isAvailable,
+                "orderCount" to drink.orderCount,
+            )
+            val collectionRef = firebaseDatabase.reference("/$collection").child("/${drink.drinkId}")
+            collectionRef.updateChildren(drinkMap, buildSettings = {})
         } catch (ex: Exception) {
             // handle http, socket exceptions
             // TODO remove this try catch and handle this via interceptors
