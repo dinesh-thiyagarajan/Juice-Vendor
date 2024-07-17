@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import auth.composables.AddNewUserComposable
 import auth.composables.FetchingLoginStatusComposable
 import auth.composables.LoginComposable
 import auth.viewModels.AuthUiState
@@ -35,6 +36,7 @@ import juices.composables.ReportsComposable
 import juices.viewModels.JuiceVendorViewModel
 import juicevendor.composeapp.generated.resources.Res
 import juicevendor.composeapp.generated.resources.ic_404
+import juicevendor.composeapp.generated.resources.ic_add_user
 import juicevendor.composeapp.generated.resources.ic_refresh
 import juicevendor.composeapp.generated.resources.ic_report
 import juicevendor.composeapp.generated.resources.juice_preparation
@@ -47,6 +49,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 fun JuiceVendorApp(juiceVendorViewModel: JuiceVendorViewModel, authViewModel: AuthViewModel) {
     val showAddJuiceComposable = juiceVendorViewModel.showAddJuiceComposable.collectAsState()
     val showReportsComposable = juiceVendorViewModel.showReportsComposable.collectAsState()
+    val showAddNewUserComposable = juiceVendorViewModel.showAddNewUserComposable.collectAsState()
     val authUiState = authViewModel.authUiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     MaterialTheme {
@@ -65,6 +68,11 @@ fun JuiceVendorApp(juiceVendorViewModel: JuiceVendorViewModel, authViewModel: Au
                         AddNewJuiceComposable(juiceVendorViewModel = juiceVendorViewModel)
                     } else if (showReportsComposable.value) {
                         ReportsComposable(juiceVendorViewModel = juiceVendorViewModel)
+                    } else if (showAddNewUserComposable.value) {
+                        AddNewUserComposable(
+                            juiceVendorViewModel = juiceVendorViewModel,
+                            authViewModel = authViewModel
+                        )
                     } else {
                         val isAdmin = (authUiState.value as AuthUiState.LoggedIn).isAdmin
                         Row(
@@ -100,16 +108,29 @@ fun JuiceVendorApp(juiceVendorViewModel: JuiceVendorViewModel, authViewModel: Au
                                 )
                             }
                             if (isAdmin) {
-                                Image(
-                                    painter = painterResource(Res.drawable.juice_preparation),
-                                    contentDescription = "update juices list",
-                                    modifier = Modifier.size(30.dp).clickable {
-                                        juiceVendorViewModel.updateAddJuiceComposableVisibility(
-                                            status = true
-                                        )
-                                    },
-                                    contentScale = ContentScale.Fit
-                                )
+                                Row {
+                                    Image(
+                                        painter = painterResource(Res.drawable.ic_add_user),
+                                        contentDescription = "add user",
+                                        modifier = Modifier.size(30.dp).clickable {
+                                            juiceVendorViewModel.updateAddNewUserComposableVisibility(
+                                                status = true
+                                            )
+                                        },
+                                        contentScale = ContentScale.Fit
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Image(
+                                        painter = painterResource(Res.drawable.juice_preparation),
+                                        contentDescription = "update juices list",
+                                        modifier = Modifier.size(30.dp).clickable {
+                                            juiceVendorViewModel.updateAddJuiceComposableVisibility(
+                                                status = true
+                                            )
+                                        },
+                                        contentScale = ContentScale.Fit
+                                    )
+                                }
                             }
                         }
                         OrdersListComposable(juiceVendorViewModel)

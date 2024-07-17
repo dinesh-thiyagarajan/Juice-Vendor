@@ -44,6 +44,11 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
         false
     )
 
+    val showAddNewUserComposable: StateFlow<Boolean> get() = _showAddNewUserComposable
+    private val _showAddNewUserComposable: MutableStateFlow<Boolean> = MutableStateFlow(
+        false
+    )
+
     val showReportsComposable: StateFlow<Boolean> get() = _showReportsComposable
     private val _showReportsComposable: MutableStateFlow<Boolean> = MutableStateFlow(
         false
@@ -55,6 +60,10 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
 
     fun updateReportsComposableVisibility(status: Boolean) {
         _showReportsComposable.value = status
+    }
+
+    fun updateAddNewUserComposableVisibility(status: Boolean) {
+        _showAddNewUserComposable.value = status
     }
 
     suspend fun refreshDrinkOrdersWithAutoTimeInterval() {

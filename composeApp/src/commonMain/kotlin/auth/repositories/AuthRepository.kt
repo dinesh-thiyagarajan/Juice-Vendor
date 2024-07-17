@@ -31,36 +31,70 @@ class AuthRepository(
     fun isLoggedIn(): Boolean = Firebase.auth.currentUser != null
 
 
-    suspend fun addUser(user: User) {
+    suspend fun addUser(user: User, collection: String) {
         val userMap = mapOf<String, Any>(
             "id" to user.id,
             "email" to user.email,
+            "name" to user.name,
             "role" to user.role,
             "timeStamp" to System.currentTimeMillis().toString()
         )
 
-        val ref = firebaseDatabase.reference("/Users")
+        val ref = firebaseDatabase.reference(collection)
         ref.child(user.id).setValue(userMap) { encodeDefaults = true }
+    }
+
+    suspend fun deleteUser(user: User, collection: String) {
+        val ref = firebaseDatabase.reference(collection)
+        ref.child(user.id).removeValue()
     }
 
     private suspend fun getCurrentLoggedInUserEmail() = Firebase.auth.currentUser?.email
 
-    private suspend fun getUsersList(usersCollection: String): List<String> {
-        val usersList: MutableList<String> = mutableListOf()
+    private suspend fun getAdminEmailsList(usersCollection: String): List<String> {
+        val adminsList: MutableList<String> = mutableListOf()
         try {
             val ref = firebaseDatabase.reference("/$usersCollection").orderByKey()
             val dataSnapshot = Tasks.await(ref.android.get())
             for (snapshot in dataSnapshot.children) {
                 val user = snapshot.getValue(User::class.java)
-                user?.email?.let { usersList.add(it) }
+                user?.let {
+                    if (it.role == "ADMIN") {
+                        adminsList.add(it.email)
+                    }
+                }
             }
         } catch (ex: Exception) {
             println(ex.message)
         }
-        return usersList.toList()
+        return adminsList.toList()
     }
 
     suspend fun isAdmin(usersCollection: String): Boolean =
-        getUsersList(usersCollection).contains(getCurrentLoggedInUserEmail())
+        getAdminEmailsList(usersCollection).contains(getCurrentLoggedInUserEmail())
+
+    suspend fun getUsersList(usersCollection: String): Response<List<User>> {
+        val usersList: MutableList<User> = mutableListOf()
+        try {
+            val ref = firebaseDatabase.reference("/$usersCollection").orderByKey()
+            val dataSnapshot = Tasks.await(ref.android.get())
+            for (snapshot in dataSnapshot.children) {
+                val user = snapshot.getValue(User::class.java)
+                user?.let {
+                    usersList.add(user)
+                }
+            }
+            return Response(
+                status = Status.Success,
+                data = usersList,
+                message = "Users fetched successfully"
+            )
+        } catch (ex: Exception) {
+            return Response(
+                status = Status.Error,
+                message = ex.message
+            )
+        }
+    }
 
 }

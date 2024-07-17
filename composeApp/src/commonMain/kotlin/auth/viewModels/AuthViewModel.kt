@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import auth.repositories.AuthRepository
 import data.Status
+import data.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,6 +18,13 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
     private val _authUiState: MutableStateFlow<AuthUiState> = MutableStateFlow(
         AuthUiState.FetchingLoginStatus
     )
+
+    val getUsersUiState: StateFlow<GetUsersUiState> get() = _getUsersUiState
+    private val _getUsersUiState: MutableStateFlow<GetUsersUiState> = MutableStateFlow(
+        GetUsersUiState.Loading
+    )
+
+    private var usersList: MutableList<User> = mutableListOf()
 
     // TODO remove this from constructor and implement a better way
     init {
@@ -62,6 +70,47 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
             _authUiState.value = authUiState
         }
     }
+
+    suspend fun getUsersList() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val usersResponse = authRepository.getUsersList(COLLECTION_USERS)
+            when (usersResponse.status) {
+                Status.Loading -> {
+                    _getUsersUiState.value = GetUsersUiState.Loading
+                }
+
+                Status.Success -> {
+                    _getUsersUiState.value =
+                        GetUsersUiState.Success(usersList = usersResponse.data ?: emptyList())
+                    usersList = usersResponse.data?.toMutableList() ?: mutableListOf()
+                }
+
+                Status.Error -> {
+                    _getUsersUiState.value = GetUsersUiState.Error
+                }
+            }
+        }
+    }
+
+    suspend fun addNewUser(user: User) {
+        viewModelScope.launch(Dispatchers.IO) {
+            authRepository.addUser(user = user, collection = COLLECTION_USERS)
+        }
+    }
+
+    suspend fun deleteUser(user: User) {
+        viewModelScope.launch(Dispatchers.IO) {
+            authRepository.deleteUser(user = user, collection = COLLECTION_USERS)
+            usersList.removeIf { it.id == user.id }
+            _getUsersUiState.value = GetUsersUiState.Success(usersList = usersList)
+        }
+    }
+}
+
+sealed interface GetUsersUiState {
+    data object Loading : GetUsersUiState
+    data class Success(val usersList: List<User>) : GetUsersUiState
+    data object Error : GetUsersUiState
 }
 
 sealed interface AuthUiState {
