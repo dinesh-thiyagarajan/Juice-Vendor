@@ -1,3 +1,5 @@
+[![Build and Upload Artifacts](https://github.com/dinesh-thiyagarajan/Juice-Vendor/actions/workflows/build.yml/badge.svg)](https://github.com/dinesh-thiyagarajan/Juice-Vendor/actions/workflows/build.yml)
+
 # Juice Vendor
 
 **Juice Vendor** is a Kotlin Multiplatform project targeting Android, Desktop for displaying the juice order placed via [Juice Kadai](https://github.com/dinesh-thiyagarajan/Juice-Kadai)
