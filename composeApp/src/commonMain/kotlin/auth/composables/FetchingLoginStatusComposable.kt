@@ -14,7 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import juicevendor.composeapp.generated.resources.Res
-import juicevendor.composeapp.generated.resources.ic_report
+import juicevendor.composeapp.generated.resources.ic_check_creds
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -27,7 +27,7 @@ fun FetchingLoginStatusComposable() {
     ) {
 
         Image(
-            painterResource(Res.drawable.ic_report),
+            painterResource(Res.drawable.ic_check_creds),
             "check creds",
             modifier = Modifier.size(100.dp)
         )
