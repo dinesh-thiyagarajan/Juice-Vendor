@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import data.Drink
 import data.Order
 import juices.viewModels.JuiceVendorViewModel
 import kotlinx.coroutines.launch
@@ -27,7 +26,7 @@ import java.util.Date
 import java.util.Locale
 
 @Composable
-fun JuiceListComposable(juiceVendorViewModel: JuiceVendorViewModel) {
+fun OrdersListComposable(juiceVendorViewModel: JuiceVendorViewModel) {
 
     val coroutineScope = rememberCoroutineScope()
 

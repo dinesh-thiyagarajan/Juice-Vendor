@@ -62,4 +62,19 @@ class JuiceVendorRepository(private val firebaseDatabase: FirebaseDatabase = Fir
         }
     }
 
+    suspend fun getDrinksList(collection: String): Response<List<Drink>> {
+        val drinksList: MutableList<Drink> = mutableListOf()
+        try {
+            val ref = firebaseDatabase.reference("/$collection")
+            val dataSnapshot = Tasks.await(ref.android.get())
+            for (snapshot in dataSnapshot.children) {
+                val drink = snapshot.getValue(Drink::class.java)
+                drinksList.add(drink!!)
+            }
+            return Response(status = Status.Success, data = drinksList)
+        } catch (ex: Exception) {
+            return Response(status = Status.Error, message = ex.message)
+        }
+    }
+
 }

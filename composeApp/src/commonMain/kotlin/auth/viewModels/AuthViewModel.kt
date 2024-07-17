@@ -30,6 +30,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val authResponse = authRepository.login(email = email, password = password)
             when (authResponse.status) {
+                Status.Loading -> {}
                 Status.Success -> {
                     _authUiState.value = AuthUiState.LoggedIn
                 }

@@ -6,14 +6,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetValue
@@ -23,6 +24,8 @@ import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,9 +38,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import data.Drink
+import juices.viewModels.DrinksUiState
 import juices.viewModels.JuiceVendorViewModel
 import juicevendor.composeapp.generated.resources.Res
+import juicevendor.composeapp.generated.resources.ic_404
 import juicevendor.composeapp.generated.resources.ic_close
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import java.util.UUID
@@ -52,17 +58,14 @@ fun AddNewJuiceComposable(juiceVendorViewModel: JuiceVendorViewModel) {
     var juiceName by remember { mutableStateOf("") }
     var juiceImage by remember { mutableStateOf("") }
     var juiceAvailability by remember { mutableStateOf(true) }
-    val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .verticalScroll(scrollState)
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        Row (horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
             Image(
                 painter = painterResource(Res.drawable.ic_close),
                 contentDescription = null,
@@ -125,5 +128,87 @@ fun AddNewJuiceComposable(juiceVendorViewModel: JuiceVendorViewModel) {
                 Text("Save")
             }
         }
+        UpdateJuicesComposable(juiceVendorViewModel, coroutineScope)
     }
 }
+
+@Composable
+fun UpdateJuicesComposable(
+    juiceVendorViewModel: JuiceVendorViewModel,
+    coroutineScope: CoroutineScope
+) {
+    LaunchedEffect(juiceVendorViewModel) {
+        coroutineScope.launch {
+            juiceVendorViewModel.getDrinksList()
+        }
+    }
+
+    val drinksUiState = juiceVendorViewModel.drinksUiState.collectAsState()
+    when (drinksUiState.value) {
+        is DrinksUiState.Loading -> {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                CircularProgressIndicator()
+                Spacer(modifier = Modifier.height(10.dp))
+                Text("Please wait while we fetch the juices list for you")
+            }
+        }
+
+        is DrinksUiState.Success -> {
+            JuicesListComposable(
+                drinks = (drinksUiState.value as DrinksUiState.Success).drinks,
+                juiceVendorViewModel
+            )
+        }
+
+        is DrinksUiState.Error -> {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Image(
+                    painter = painterResource(Res.drawable.ic_404),
+                    contentDescription = "error",
+                    modifier = Modifier.size(50.dp),
+                    contentScale = ContentScale.Fit
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "Something went wrong while fetching the data, Please check your internet connection, if its fine please contact Admin",
+                    modifier = Modifier.padding(30.dp),
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun JuicesListComposable(drinks: List<Drink>, juiceVendorViewModel: JuiceVendorViewModel) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        items(drinks.size) { index ->
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = drinks[index].drinkName)
+                Spacer(modifier = Modifier.weight(1f))
+                Switch(
+                    checked = drinks[index].isAvailable,
+                    onCheckedChange = { availability ->
+                        juiceVendorViewModel.onJuiceAvailabilityUpdated(
+                            availability = availability,
+                            drinkId = drinks[index].drinkId
+                        )
+                    })
+            }
+        }
+    }
+}
+

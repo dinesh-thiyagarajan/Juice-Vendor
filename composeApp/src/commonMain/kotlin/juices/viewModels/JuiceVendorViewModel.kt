@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import data.Drink
 import data.Order
 import data.Report
+import data.Status
 import juices.repositories.JuiceVendorRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -21,6 +22,14 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
     private val _orders: MutableStateFlow<List<Order>> = MutableStateFlow(
         listOf()
     )
+
+    val drinksUiState: StateFlow<DrinksUiState> get() = _drinksUiState
+    private val _drinksUiState: MutableStateFlow<DrinksUiState> = MutableStateFlow(
+        DrinksUiState.Loading
+    )
+
+    private val drinksList: MutableStateFlow<MutableList<Drink>> =
+        MutableStateFlow(mutableListOf())
 
     val totalOrdersCount: StateFlow<Int> get() = _totalOrdersCount
     private val _totalOrdersCount: MutableStateFlow<Int> = MutableStateFlow(0)
@@ -57,6 +66,20 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
         }
     }
 
+    fun onJuiceAvailabilityUpdated(availability: Boolean, drinkId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val updatedList = drinksList.value.map { drink ->
+                if (drink.drinkId == drinkId) {
+                    drink.copy(isAvailable = availability)
+                } else {
+                    drink
+                }
+            }
+            drinksList.value = updatedList.toMutableList()
+            _drinksUiState.value = DrinksUiState.Success(drinks = updatedList)
+        }
+    }
+
     suspend fun getDrinkOrders() {
         viewModelScope.launch(Dispatchers.IO) {
             juiceVendorRepository.getDrinkOrders().data?.reversed()?.let {
@@ -80,7 +103,7 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
         }
     }
 
-    suspend fun createOrdersAggregateReport() {
+    fun createOrdersAggregateReport() {
         viewModelScope.launch(Dispatchers.Default) {
             val reportMap: HashMap<String, Report> = hashMapOf()
 
@@ -105,4 +128,32 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
         }
     }
 
+    suspend fun getDrinksList() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val response = juiceVendorRepository.getDrinksList(JUICE_LIST_COLLECTION)
+            when (response.status) {
+                Status.Loading -> {
+                    _drinksUiState.value = DrinksUiState.Loading
+                }
+
+                Status.Success -> {
+                    drinksList.value = response.data?.toMutableList() ?: mutableListOf()
+                    _drinksUiState.value =
+                        DrinksUiState.Success(
+                            drinks = response.data?.toList() ?: emptyList()
+                        )
+                }
+
+                Status.Error -> {
+                    _drinksUiState.value = DrinksUiState.Error(message = "Unable to fetch Juices")
+                }
+            }
+        }
+    }
+}
+
+sealed interface DrinksUiState {
+    data object Loading : DrinksUiState
+    data class Success(val drinks: List<Drink>) : DrinksUiState
+    data class Error(val message: String?) : DrinksUiState
 }

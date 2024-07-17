@@ -43,7 +43,7 @@ fun LoginComposable(authViewModel: AuthViewModel, coroutineScope: CoroutineScope
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 8.dp)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -65,7 +65,7 @@ fun LoginComposable(authViewModel: AuthViewModel, coroutineScope: CoroutineScope
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next
             ),
-            modifier = Modifier.fillMaxWidth(0.6f)
+            modifier = Modifier.fillMaxWidth(0.7f)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -80,7 +80,7 @@ fun LoginComposable(authViewModel: AuthViewModel, coroutineScope: CoroutineScope
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done
             ),
-            modifier = Modifier.fillMaxWidth(0.6f)
+            modifier = Modifier.fillMaxWidth(0.7f)
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(

@@ -30,7 +30,7 @@ import auth.composables.LoginComposable
 import auth.viewModels.AuthUiState
 import auth.viewModels.AuthViewModel
 import juices.composables.AddNewJuiceComposable
-import juices.composables.JuiceListComposable
+import juices.composables.OrdersListComposable
 import juices.composables.ReportsComposable
 import juices.viewModels.JuiceVendorViewModel
 import juicevendor.composeapp.generated.resources.Res
@@ -106,7 +106,7 @@ fun JuiceVendorApp(juiceVendorViewModel: JuiceVendorViewModel, authViewModel: Au
                                 contentScale = ContentScale.Fit
                             )
                         }
-                        JuiceListComposable(juiceVendorViewModel)
+                        OrdersListComposable(juiceVendorViewModel)
                     }
                 }
             }
