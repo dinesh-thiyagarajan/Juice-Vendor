@@ -30,6 +30,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import auth.viewModels.AuthViewModel
+import data.Role
 import data.User
 import juices.viewModels.JuiceVendorViewModel
 import juicevendor.composeapp.generated.resources.Res
@@ -106,7 +107,7 @@ fun AddNewUserComposable(juiceVendorViewModel: JuiceVendorViewModel, authViewMod
                             id = UUID.randomUUID().toString(),
                             email = userEmail,
                             name = userName,
-                            role = if (isAdmin) "ADMIN" else "VENDOR"
+                            role = if (isAdmin) Role.ADMIN else Role.VENDOR
                         )
                         authViewModel.addNewUser(user)
                         juiceVendorViewModel.updateAddNewUserComposableVisibility(status = false)

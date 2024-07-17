@@ -22,6 +22,8 @@ import auth.viewModels.GetUsersUiState
 import common.ErrorComposable
 import common.LoadingComposable
 import data.User
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.auth.auth
 import juicevendor.composeapp.generated.resources.Res
 import juicevendor.composeapp.generated.resources.ic_delete
 import kotlinx.coroutines.CoroutineScope
@@ -77,10 +79,12 @@ fun UpdateUsersListComposable(
                 Spacer(modifier = Modifier.weight(1f))
                 Image(
                     painter = painterResource(Res.drawable.ic_delete),
-                    contentDescription = "add user",
+                    contentDescription = "delete user",
                     modifier = Modifier.size(30.dp).clickable {
                         coroutineScope.launch {
-                            authViewModel.deleteUser(user = users[index])
+                            if (Firebase.auth.currentUser?.email != users[index].email) {
+                                authViewModel.deleteUser(user = users[index])
+                            }
                         }
                     },
                     contentScale = ContentScale.Fit

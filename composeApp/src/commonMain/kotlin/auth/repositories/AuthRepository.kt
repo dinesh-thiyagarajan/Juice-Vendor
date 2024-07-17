@@ -2,6 +2,7 @@ package auth.repositories
 
 import com.google.android.gms.tasks.Tasks
 import data.Response
+import data.Role
 import data.Status
 import data.User
 import dev.gitlive.firebase.Firebase
@@ -59,7 +60,7 @@ class AuthRepository(
             for (snapshot in dataSnapshot.children) {
                 val user = snapshot.getValue(User::class.java)
                 user?.let {
-                    if (it.role == "ADMIN") {
+                    if (it.role == Role.ADMIN) {
                         adminsList.add(it.email)
                     }
                 }
