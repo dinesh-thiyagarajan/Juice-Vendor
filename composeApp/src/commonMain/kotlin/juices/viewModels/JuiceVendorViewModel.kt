@@ -77,6 +77,11 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
             }
             drinksList.value = updatedList.toMutableList()
             _drinksUiState.value = DrinksUiState.Success(drinks = updatedList)
+            juiceVendorRepository.updateJuiceAvailability(
+                collection = JUICE_LIST_COLLECTION,
+                drinkId = drinkId,
+                availability = availability
+            )
         }
     }
 

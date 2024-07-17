@@ -54,8 +54,29 @@ class JuiceVendorRepository(private val firebaseDatabase: FirebaseDatabase = Fir
                 "isAvailable" to drink.isAvailable,
                 "orderCount" to drink.orderCount,
             )
-            val collectionRef = firebaseDatabase.reference("/$collection").child("/${drink.drinkId}")
-            collectionRef.updateChildren(drinkMap, buildSettings = {})
+            val collectionRef =
+                firebaseDatabase.reference("/$collection").child("/${drink.drinkId}")
+            collectionRef.setValue(drinkMap, buildSettings = { encodeDefaults = true })
+        } catch (ex: Exception) {
+            // handle http, socket exceptions
+            // TODO remove this try catch and handle this via interceptors
+        }
+    }
+
+    suspend fun updateJuiceAvailability(
+        collection: String,
+        drinkId: String,
+        availability: Boolean
+    ) {
+        try {
+            val availabilityMap = mapOf<String, Any>(
+                "isAvailable" to availability
+            )
+            val collectionRef =
+                firebaseDatabase.reference("/$collection").child("/${drinkId}")
+            collectionRef.updateChildren(
+                update = availabilityMap,
+                buildSettings = { encodeDefaults = true })
         } catch (ex: Exception) {
             // handle http, socket exceptions
             // TODO remove this try catch and handle this via interceptors
