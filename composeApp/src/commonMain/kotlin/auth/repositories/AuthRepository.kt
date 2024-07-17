@@ -1,9 +1,9 @@
 package auth.repositories
 
 import com.google.android.gms.tasks.Tasks
-import data.Drink
 import data.Response
 import data.Status
+import data.User
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.FirebaseAuth
 import dev.gitlive.firebase.auth.auth
@@ -30,20 +30,37 @@ class AuthRepository(
 
     fun isLoggedIn(): Boolean = Firebase.auth.currentUser != null
 
-    suspend fun getAdminsList(collection: String) {
-        val drinksList: MutableList<Drink> = mutableListOf()
-        try {
-            val ref = firebaseDatabase.reference("/$collection")
-            val dataSnapshot = Tasks.await(ref.android.get())
-            for (snapshot in dataSnapshot.children) {
-                val drink = snapshot.getValue(Drink::class.java)
-                drinksList.add(drink!!)
-            }
 
-        } catch (ex: Exception) {
+    suspend fun addUser(user: User) {
+        val userMap = mapOf<String, Any>(
+            "id" to user.id,
+            "email" to user.email,
+            "role" to user.role,
+            "timeStamp" to System.currentTimeMillis().toString()
+        )
 
-        }
+        val ref = firebaseDatabase.reference("/Users")
+        ref.child(user.id).setValue(userMap) { encodeDefaults = true }
     }
 
-    fun isAdmin(): Boolean = false
+    private suspend fun getCurrentLoggedInUserEmail() = Firebase.auth.currentUser?.email
+
+    private suspend fun getUsersList(usersCollection: String): List<String> {
+        val usersList: MutableList<String> = mutableListOf()
+        try {
+            val ref = firebaseDatabase.reference("/$usersCollection").orderByKey()
+            val dataSnapshot = Tasks.await(ref.android.get())
+            for (snapshot in dataSnapshot.children) {
+                val user = snapshot.getValue(User::class.java)
+                user?.email?.let { usersList.add(it) }
+            }
+        } catch (ex: Exception) {
+            println(ex.message)
+        }
+        return usersList.toList()
+    }
+
+    suspend fun isAdmin(usersCollection: String): Boolean =
+        getUsersList(usersCollection).contains(getCurrentLoggedInUserEmail())
+
 }

@@ -23,7 +23,7 @@ class JuiceVendorRepository(private val firebaseDatabase: FirebaseDatabase = Fir
         val ordersList: MutableList<Order> = mutableListOf()
         try {
             val ref = firebaseDatabase.reference("/$collection")
-            val dataSnapshot = Tasks.await(ref.android.get())
+            val dataSnapshot = Tasks.await(ref.android.orderByKey().get())
             for (snapshot in dataSnapshot.children) {
                 (snapshot.value as Map<*, *>).entries.forEach { entry ->
                     val drinkId = (entry.value as HashMap<*, *>)["drinkId"]

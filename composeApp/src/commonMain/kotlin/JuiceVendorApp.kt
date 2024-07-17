@@ -51,21 +51,22 @@ fun JuiceVendorApp(juiceVendorViewModel: JuiceVendorViewModel, authViewModel: Au
     val coroutineScope = rememberCoroutineScope()
     MaterialTheme {
         when (authUiState.value) {
-            AuthUiState.FetchingLoginStatus -> {
+            is AuthUiState.FetchingLoginStatus -> {
                 FetchingLoginStatusComposable()
             }
 
-            AuthUiState.NotLoggedIn -> {
+            is AuthUiState.NotLoggedIn -> {
                 LoginComposable(authViewModel = authViewModel, coroutineScope = coroutineScope)
             }
 
-            AuthUiState.LoggedIn -> {
+            is AuthUiState.LoggedIn -> {
                 Column {
                     if (showAddJuiceComposable.value) {
                         AddNewJuiceComposable(juiceVendorViewModel = juiceVendorViewModel)
                     } else if (showReportsComposable.value) {
                         ReportsComposable(juiceVendorViewModel = juiceVendorViewModel)
                     } else {
+                        val isAdmin = (authUiState.value as AuthUiState.LoggedIn).isAdmin
                         Row(
                             modifier = Modifier.padding(20.dp).fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -74,6 +75,7 @@ fun JuiceVendorApp(juiceVendorViewModel: JuiceVendorViewModel, authViewModel: Au
                                 Image(
                                     painter = painterResource(Res.drawable.ic_refresh),
                                     contentDescription = "refresh juice orders",
+
                                     modifier = Modifier.size(30.dp).clickable {
                                         coroutineScope.launch {
                                             juiceVendorViewModel.getDrinkOrders()
@@ -97,21 +99,25 @@ fun JuiceVendorApp(juiceVendorViewModel: JuiceVendorViewModel, authViewModel: Au
                                     contentScale = ContentScale.Fit
                                 )
                             }
-                            Image(
-                                painter = painterResource(Res.drawable.juice_preparation),
-                                contentDescription = "update juices list",
-                                modifier = Modifier.size(30.dp).clickable {
-                                    juiceVendorViewModel.updateAddJuiceComposableVisibility(status = true)
-                                },
-                                contentScale = ContentScale.Fit
-                            )
+                            if (isAdmin) {
+                                Image(
+                                    painter = painterResource(Res.drawable.juice_preparation),
+                                    contentDescription = "update juices list",
+                                    modifier = Modifier.size(30.dp).clickable {
+                                        juiceVendorViewModel.updateAddJuiceComposableVisibility(
+                                            status = true
+                                        )
+                                    },
+                                    contentScale = ContentScale.Fit
+                                )
+                            }
                         }
                         OrdersListComposable(juiceVendorViewModel)
                     }
                 }
             }
 
-            AuthUiState.LoginInProgress -> {
+            is AuthUiState.LoginInProgress -> {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -123,7 +129,7 @@ fun JuiceVendorApp(juiceVendorViewModel: JuiceVendorViewModel, authViewModel: Au
                 }
             }
 
-            AuthUiState.Error -> {
+            is AuthUiState.Error -> {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,

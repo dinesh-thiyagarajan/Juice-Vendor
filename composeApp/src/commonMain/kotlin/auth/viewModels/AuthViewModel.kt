@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
+const val COLLECTION_USERS = "Users"
+
 class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
     val authUiState: StateFlow<AuthUiState> get() = _authUiState
@@ -32,7 +34,8 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
             when (authResponse.status) {
                 Status.Loading -> {}
                 Status.Success -> {
-                    _authUiState.value = AuthUiState.LoggedIn
+                    val isAdmin = authRepository.isAdmin(COLLECTION_USERS)
+                    _authUiState.value = AuthUiState.LoggedIn(isAdmin = isAdmin)
                 }
 
                 Status.Error -> {
@@ -43,10 +46,11 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
     }
 
     private fun isLoggedIn() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val isLoggedIn = authRepository.isLoggedIn()
             if (isLoggedIn) {
-                _authUiState.value = AuthUiState.LoggedIn
+                val isAdmin = authRepository.isAdmin(COLLECTION_USERS)
+                _authUiState.value = AuthUiState.LoggedIn(isAdmin = isAdmin)
             } else {
                 _authUiState.value = AuthUiState.NotLoggedIn
             }
@@ -64,6 +68,6 @@ sealed interface AuthUiState {
     data object NotLoggedIn : AuthUiState
     data object FetchingLoginStatus : AuthUiState
     data object LoginInProgress : AuthUiState
-    data object LoggedIn : AuthUiState
+    data class LoggedIn(var isAdmin: Boolean = false) : AuthUiState
     data object Error : AuthUiState
 }

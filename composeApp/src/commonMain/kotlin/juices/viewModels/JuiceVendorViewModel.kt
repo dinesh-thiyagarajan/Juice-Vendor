@@ -87,7 +87,7 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
 
     suspend fun getDrinkOrders() {
         viewModelScope.launch(Dispatchers.IO) {
-            juiceVendorRepository.getDrinkOrders().data?.reversed()?.let {
+            juiceVendorRepository.getDrinkOrders().data?.let {
                 _orders.value = it
                 calculateTotalOrdersCount(it)
             }
