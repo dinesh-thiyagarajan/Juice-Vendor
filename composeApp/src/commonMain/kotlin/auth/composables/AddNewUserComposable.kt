@@ -109,10 +109,10 @@ fun AddNewUserComposable(juiceVendorViewModel: JuiceVendorViewModel, authViewMod
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Row(modifier = Modifier.align(Alignment.Start).padding(start = 5.dp)) {
+        Row(modifier = Modifier.align(Alignment.Start)) {
             Text(
-                "Admins", style = MaterialTheme.typography.h2,
-                color = Color.Black,
+                "Admins", style = MaterialTheme.typography.h4,
+                color = Color.Gray,
                 fontSize = 18.sp
             )
         }

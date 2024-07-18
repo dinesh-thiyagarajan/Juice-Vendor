@@ -33,10 +33,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import data.Drink
 import juices.viewModels.DrinksUiState
 import juices.viewModels.JuiceVendorViewModel
@@ -127,6 +129,14 @@ fun AddNewJuiceComposable(juiceVendorViewModel: JuiceVendorViewModel) {
             }, enabled = juiceName.isNotEmpty(), modifier = Modifier.fillMaxWidth(0.3f)) {
                 Text("Save")
             }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(modifier = Modifier.align(Alignment.Start)) {
+            Text(
+                "Juices", style = MaterialTheme.typography.h4,
+                color = Color.Gray,
+                fontSize = 18.sp
+            )
         }
         UpdateJuicesComposable(juiceVendorViewModel, coroutineScope)
     }
