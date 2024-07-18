@@ -38,9 +38,12 @@ import androidx.compose.ui.unit.sp
 import juices.viewModels.JuiceVendorViewModel
 import juicevendor.composeapp.generated.resources.Res
 import juicevendor.composeapp.generated.resources.ic_apple
+import juicevendor.composeapp.generated.resources.ic_banana
 import juicevendor.composeapp.generated.resources.ic_close
 import juicevendor.composeapp.generated.resources.ic_coffee
 import juicevendor.composeapp.generated.resources.ic_fruit_bowl
+import juicevendor.composeapp.generated.resources.ic_generic_juice
+import juicevendor.composeapp.generated.resources.ic_lemon
 import juicevendor.composeapp.generated.resources.ic_orange
 import juicevendor.composeapp.generated.resources.ic_tea
 import juicevendor.composeapp.generated.resources.ic_watermelon
@@ -120,15 +123,17 @@ fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
     }
 }
 
-private fun getResourceDrawable(imageId: String): DrawableResource {
+fun getResourceDrawable(imageId: String): DrawableResource {
     return when (imageId.toLowerCase(androidx.compose.ui.text.intl.Locale.current)) {
         "orange" -> Res.drawable.ic_orange
         "apple" -> Res.drawable.ic_apple
+        "banana" -> Res.drawable.ic_banana
+        "lemon" -> Res.drawable.ic_lemon
         "watermelon" -> Res.drawable.ic_watermelon
         "fruitbowl" -> Res.drawable.ic_fruit_bowl
         "tea" -> Res.drawable.ic_tea
         "coffee" -> Res.drawable.ic_coffee
-        else -> Res.drawable.ic_orange
+        else -> Res.drawable.ic_generic_juice
     }
 }
 
