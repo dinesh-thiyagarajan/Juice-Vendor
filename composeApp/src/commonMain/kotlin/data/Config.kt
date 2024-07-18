@@ -7,5 +7,6 @@ object Config {
     val APP_ID = BuildKonfig.APP_ID.trim('\"')
     val API_KEY = BuildKonfig.API_KEY.trim('\"')
     val FIREBASE_DB_URL = BuildKonfig.FIREBASE_DB_URL.trim('\"')
+    val SERVICE_ACCOUNT_ID = BuildKonfig.SERVICE_ACCOUNT_ID.trim('\"')
     val PRINT_HTTP_LOGS = BuildKonfig.PRINT_HTTP_LOGS.trim('\"').toBoolean()
 }

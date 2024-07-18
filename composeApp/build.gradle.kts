@@ -21,12 +21,12 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     jvm("desktop")
-    
+
     sourceSets {
         val desktopMain by getting
-        
+
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
@@ -110,11 +110,15 @@ buildkonfig {
         val printHttpLogs: String =
             gradleLocalProperties(rootDir).getProperty("PRINT_HTTP_LOGS")
 
+        val serviceAccountId: String =
+            gradleLocalProperties(rootDir).getProperty("SERVICE_ACCOUNT_ID")
+
         buildConfigField(STRING, "PROJECT_ID", projectId)
         buildConfigField(STRING, "FIREBASE_DB_URL", firebaseDatabaseUrl)
         buildConfigField(STRING, "APP_ID", appId)
         buildConfigField(STRING, "API_KEY", apiKey)
         buildConfigField(STRING, "PRINT_HTTP_LOGS", printHttpLogs)
+        buildConfigField(STRING, "SERVICE_ACCOUNT_ID", serviceAccountId)
     }
 }
 

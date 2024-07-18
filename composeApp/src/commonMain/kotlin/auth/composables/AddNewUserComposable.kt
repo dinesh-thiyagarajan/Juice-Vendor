@@ -14,8 +14,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Switch
-import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,10 +23,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import auth.viewModels.AuthViewModel
 import data.Role
 import data.User
@@ -45,7 +45,6 @@ fun AddNewUserComposable(juiceVendorViewModel: JuiceVendorViewModel, authViewMod
     val coroutineScope = rememberCoroutineScope()
     var userName by remember { mutableStateOf("") }
     var userEmail by remember { mutableStateOf("") }
-    var isAdmin by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -89,16 +88,6 @@ fun AddNewUserComposable(juiceVendorViewModel: JuiceVendorViewModel, authViewMod
             modifier = Modifier.fillMaxWidth(0.8f)
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Do you want to make him an Admin")
-        Spacer(modifier = Modifier.height(5.dp))
-        Switch(
-            checked = isAdmin,
-            onCheckedChange = { isAdmin = it },
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colors.primary,
-                uncheckedThumbColor = MaterialTheme.colors.onSurface
-            )
-        )
         Row(horizontalArrangement = Arrangement.Center) {
             Button(
                 onClick = {
@@ -107,17 +96,25 @@ fun AddNewUserComposable(juiceVendorViewModel: JuiceVendorViewModel, authViewMod
                             id = UUID.randomUUID().toString(),
                             email = userEmail,
                             name = userName,
-                            role = if (isAdmin) Role.ADMIN else Role.VENDOR
+                            role = Role.ADMIN
                         )
                         authViewModel.addNewUser(user)
                         juiceVendorViewModel.updateAddNewUserComposableVisibility(status = false)
                     }
                 },
                 enabled = userName.isNotEmpty() && userEmail.isNotEmpty(),
-                modifier = Modifier.fillMaxWidth(0.3f)
+                modifier = Modifier.fillMaxWidth(0.5f)
             ) {
-                Text("Save")
+                Text("Create Admin", maxLines = 1)
             }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(modifier = Modifier.align(Alignment.Start).padding(start = 5.dp)) {
+            Text(
+                "Admins", style = MaterialTheme.typography.h2,
+                color = Color.Black,
+                fontSize = 18.sp
+            )
         }
         UsersListComposable(authViewModel = authViewModel, coroutineScope = coroutineScope)
     }

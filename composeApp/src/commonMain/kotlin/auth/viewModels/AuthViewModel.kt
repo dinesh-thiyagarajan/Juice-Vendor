@@ -37,12 +37,13 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         email: String,
         password: String,
     ) {
+        _authUiState.value = AuthUiState.LoginInProgress
         viewModelScope.launch(Dispatchers.IO) {
             val authResponse = authRepository.login(email = email, password = password)
             when (authResponse.status) {
                 Status.Loading -> {}
                 Status.Success -> {
-                    val isAdmin = authRepository.isAdmin(COLLECTION_USERS)
+                    val isAdmin = authRepository.hasAdminAccess()
                     _authUiState.value = AuthUiState.LoggedIn(isAdmin = isAdmin)
                 }
 
@@ -57,7 +58,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val isLoggedIn = authRepository.isLoggedIn()
             if (isLoggedIn) {
-                val isAdmin = authRepository.isAdmin(COLLECTION_USERS)
+                val isAdmin = authRepository.hasAdminAccess()
                 _authUiState.value = AuthUiState.LoggedIn(isAdmin = isAdmin)
             } else {
                 _authUiState.value = AuthUiState.NotLoggedIn
@@ -94,13 +95,15 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
     suspend fun addNewUser(user: User) {
         viewModelScope.launch(Dispatchers.IO) {
-            authRepository.addUser(user = user, collection = COLLECTION_USERS)
+            authRepository.addUser(user = user)
         }
     }
 
     suspend fun deleteUser(user: User) {
         viewModelScope.launch(Dispatchers.IO) {
-            authRepository.deleteUser(user = user, collection = COLLECTION_USERS)
+            // Do not allow deletion of current logged in user and deletion of service account
+            if (!authRepository.allowDeletion(userEmail = user.email)) return@launch
+            authRepository.deleteUser(user = user)
             usersList.removeIf { it.id == user.id }
             _getUsersUiState.value = GetUsersUiState.Success(usersList = usersList)
         }
