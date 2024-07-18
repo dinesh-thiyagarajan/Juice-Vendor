@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -26,7 +27,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.toLowerCase
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import juices.viewModels.JuiceVendorViewModel
@@ -60,8 +66,8 @@ fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
     }
 
     val formatter = SimpleDateFormat("dd-MM-yy", Locale.getDefault())
-    Column(modifier = Modifier.padding(20.dp)) {
-        Row (horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = Modifier.padding(10.dp)) {
+        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
             Image(
                 painter = painterResource(Res.drawable.ic_close),
                 contentDescription = null,
@@ -71,14 +77,30 @@ fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
                 contentScale = ContentScale.Fit
             )
         }
-        Spacer(modifier = Modifier.height(20.dp))
-        Text("Total number of orders for date ${formatter.format(Date())}")
+        Spacer(modifier = Modifier.height(10.dp))
+        val firstTextStyle = TextStyle(
+            fontSize = 50.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = FontFamily.Serif
+        )
+        val restTextStyle = TextStyle(
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Normal,
+            fontFamily = FontFamily.SansSerif
+        )
+        val orderText = "${totalOrdersCount.value} Orders for ${formatter.format(Date())}"
+        val annotatedString = buildAnnotatedString {
+            withStyle(style = firstTextStyle.toSpanStyle()) {
+                append(orderText.take(totalOrdersCount.value.toString().length))
+            }
+            withStyle(style = restTextStyle.toSpanStyle()) {
+                append(orderText.drop(totalOrdersCount.value.toString().length))
+            }
+        }
+
         Text(
-            "${totalOrdersCount.value}",
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            style = MaterialTheme.typography.h2,
-            color = Color.Black,
-            fontSize = 30.sp
+            modifier = Modifier.padding(start = 10.dp),
+            text = annotatedString,
         )
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
@@ -120,7 +142,9 @@ fun RoundedCardView(
         modifier = Modifier
             .padding(10.dp)
             .fillMaxHeight(),
-        shape = MaterialTheme.shapes.medium
+        elevation = 8.dp,
+        backgroundColor = MaterialTheme.colors.surface,
+        shape = RoundedCornerShape(16.dp)
     ) {
         Column(modifier = Modifier.fillMaxSize().padding(vertical = 10.dp).fillMaxWidth()) {
 
