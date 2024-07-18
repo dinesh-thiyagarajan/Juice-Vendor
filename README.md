@@ -5,9 +5,6 @@
 **Juice Vendor** is a Kotlin Multiplatform project targeting Android, Desktop for displaying the juice order placed via [Juice Kadai](https://github.com/dinesh-thiyagarajan/Juice-Kadai)
 
 # Screenshots
-![Screenshot_20240718_123254](https://github.com/user-attachments/assets/632a0dfa-f3f0-415a-9ef0-cbca154edbf6)
-![Screenshot_20240718_123338](https://github.com/user-attachments/assets/7838a035-52cd-4af1-82cf-98ca44b78441)
-![Screenshot_20240718_123352](https://github.com/user-attachments/assets/4387ee52-b4a2-4ada-8c73-59f77f9a6c79)
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/632a0dfa-f3f0-415a-9ef0-cbca154edbf6" width="250" alt="Juice Vendor Landing Screen"/>
