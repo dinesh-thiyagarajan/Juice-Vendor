@@ -46,7 +46,7 @@ fun OrdersListComposable(juiceVendorViewModel: JuiceVendorViewModel) {
 
     val drinks = juiceVendorViewModel.orders.collectAsState()
     val totalOrdersCount = juiceVendorViewModel.totalOrdersCount.collectAsState()
-    Column(modifier = Modifier.padding(20.dp)) {
+    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
         val firstTextStyle = TextStyle(
             fontSize = 50.sp,
             fontWeight = FontWeight.Bold,
