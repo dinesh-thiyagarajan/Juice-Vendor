@@ -19,7 +19,7 @@ class JuiceVendorRepository(private val firebaseDatabase: FirebaseDatabase = Fir
         return getDrinkOrders(formatter.format(Date()))
     }
 
-    private fun getDrinkOrders(collection: String): Response<List<Order>> {
+    private suspend fun getDrinkOrders(collection: String): Response<List<Order>> {
         val ordersList: MutableList<Order> = mutableListOf()
         try {
             val ref = firebaseDatabase.reference("/$collection")
