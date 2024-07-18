@@ -7,23 +7,23 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Card
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import data.Order
 import juices.viewModels.JuiceVendorViewModel
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @Composable
 fun OrdersListComposable(juiceVendorViewModel: JuiceVendorViewModel) {
@@ -38,15 +38,29 @@ fun OrdersListComposable(juiceVendorViewModel: JuiceVendorViewModel) {
 
     val drinks = juiceVendorViewModel.orders.collectAsState()
     val totalOrdersCount = juiceVendorViewModel.totalOrdersCount.collectAsState()
-    val formatter = SimpleDateFormat("dd-MM-yy", Locale.getDefault())
     Column(modifier = Modifier.padding(20.dp)) {
-        Text("Total number of orders for today ${formatter.format(Date())}")
+        val firstTextStyle = TextStyle(
+            fontSize = 50.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = FontFamily.Serif
+        )
+        val restTextStyle = TextStyle(
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Normal,
+            fontFamily = FontFamily.SansSerif
+        )
+        val orderText = "${totalOrdersCount.value} Orders for today"
+        val annotatedString = buildAnnotatedString {
+            withStyle(style = firstTextStyle.toSpanStyle()) {
+                append(orderText.take(totalOrdersCount.value.toString().length))
+            }
+            withStyle(style = restTextStyle.toSpanStyle()) {
+                append(orderText.drop(totalOrdersCount.value.toString().length))
+            }
+        }
         Text(
-            "${totalOrdersCount.value}",
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            style = MaterialTheme.typography.h2,
-            color = Color.Black,
-            fontSize = 30.sp
+            text = annotatedString,
+            textAlign = TextAlign.Justify
         )
         LazyColumn(
             modifier = Modifier.fillMaxSize()
