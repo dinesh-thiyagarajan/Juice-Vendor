@@ -25,6 +25,13 @@
 - Run this command ./gradlew generateBuildKonfig in the terminal in the root directory of the project, inside composeApp/build/buildkonfig a BuildKonfig file will be generated, any keys and values referenced in the local.properties can be accessed from here
 - Run the app
 
+# Features
+- The App will make the API call to the backend every five seconds to get the updated orders
+- Reports for the current day can be seen in the report section
+- New Juices can be added from the Add new Juice screen
+- Juices availability can be updated from the same screen
+- Add/Remove Admin operations can be done by either an Admin or from a Service Account 
+
 # Acknowledgements
 
 - The icons used in this app are from [SVG Repo](https://www.svgrepo.com)
