@@ -65,7 +65,10 @@ fun JuiceVendorApp(juiceVendorViewModel: JuiceVendorViewModel, authViewModel: Au
             is AuthUiState.LoggedIn -> {
                 Column {
                     if (showAddJuiceComposable.value) {
-                        AddNewJuiceComposable(juiceVendorViewModel = juiceVendorViewModel)
+                        AddNewJuiceComposable(
+                            juiceVendorViewModel = juiceVendorViewModel,
+                            (authUiState.value as AuthUiState.LoggedIn).isAdmin
+                        )
                     } else if (showReportsComposable.value) {
                         ReportsComposable(juiceVendorViewModel = juiceVendorViewModel)
                     } else if (showAddNewUserComposable.value) {
@@ -107,8 +110,9 @@ fun JuiceVendorApp(juiceVendorViewModel: JuiceVendorViewModel, authViewModel: Au
                                     contentScale = ContentScale.Fit
                                 )
                             }
-                            if (isAdmin) {
-                                Row {
+
+                            Row {
+                                if (isAdmin) {
                                     Image(
                                         painter = painterResource(Res.drawable.ic_add_user),
                                         contentDescription = "add user",
@@ -120,18 +124,19 @@ fun JuiceVendorApp(juiceVendorViewModel: JuiceVendorViewModel, authViewModel: Au
                                         contentScale = ContentScale.Fit
                                     )
                                     Spacer(modifier = Modifier.width(10.dp))
-                                    Image(
-                                        painter = painterResource(Res.drawable.juice_preparation),
-                                        contentDescription = "update juices list",
-                                        modifier = Modifier.size(30.dp).clickable {
-                                            juiceVendorViewModel.updateAddJuiceComposableVisibility(
-                                                status = true
-                                            )
-                                        },
-                                        contentScale = ContentScale.Fit
-                                    )
                                 }
+                                Image(
+                                    painter = painterResource(Res.drawable.juice_preparation),
+                                    contentDescription = "update juices list",
+                                    modifier = Modifier.size(30.dp).clickable {
+                                        juiceVendorViewModel.updateAddJuiceComposableVisibility(
+                                            status = true
+                                        )
+                                    },
+                                    contentScale = ContentScale.Fit
+                                )
                             }
+
                         }
                         OrdersListComposable(juiceVendorViewModel)
                     }

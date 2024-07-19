@@ -52,7 +52,7 @@ import java.util.UUID
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun AddNewJuiceComposable(juiceVendorViewModel: JuiceVendorViewModel) {
+fun AddNewJuiceComposable(juiceVendorViewModel: JuiceVendorViewModel, isAdmin: Boolean) {
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val coroutineScope = rememberCoroutineScope()
@@ -78,56 +78,57 @@ fun AddNewJuiceComposable(juiceVendorViewModel: JuiceVendorViewModel) {
             )
         }
         Spacer(modifier = Modifier.height(20.dp))
-
-        OutlinedTextField(
-            value = juiceName,
-            isError = juiceName.isEmpty(),
-            onValueChange = { juiceName = it },
-            label = { Text("Please enter juice name") },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.Next
-            ),
-            modifier = Modifier.fillMaxWidth(0.8f)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        OutlinedTextField(
-            value = juiceImage,
-            isError = false,
-            onValueChange = { juiceImage = it },
-            label = { Text("Please enter text for juice image") },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.Next
-            ),
-            modifier = Modifier.fillMaxWidth(0.8f)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(text = if (juiceAvailability) "Juice is Available" else "Juice is not Available")
-        Spacer(modifier = Modifier.height(5.dp))
-        Switch(
-            checked = juiceAvailability,
-            onCheckedChange = { juiceAvailability = it },
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colors.primary,
-                uncheckedThumbColor = MaterialTheme.colors.onSurface
+        if (isAdmin) {
+            OutlinedTextField(
+                value = juiceName,
+                isError = juiceName.isEmpty(),
+                onValueChange = { juiceName = it },
+                label = { Text("Please enter juice name") },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next
+                ),
+                modifier = Modifier.fillMaxWidth(0.8f)
             )
-        )
-        Row(horizontalArrangement = Arrangement.Center) {
-            Button(onClick = {
-                coroutineScope.launch {
-                    bottomSheetState.hide()
-                    val drink = Drink(
-                        drinkId = UUID.randomUUID().toString(),
-                        drinkName = juiceName,
-                        drinkImage = juiceImage,
-                        isAvailable = juiceAvailability
-                    )
-                    juiceVendorViewModel.addNewDrink(drink = drink)
-                    juiceVendorViewModel.updateAddJuiceComposableVisibility(status = false)
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedTextField(
+                value = juiceImage,
+                isError = false,
+                onValueChange = { juiceImage = it },
+                label = { Text("Please enter text for juice image") },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next
+                ),
+                modifier = Modifier.fillMaxWidth(0.8f)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(text = if (juiceAvailability) "Juice is Available" else "Juice is not Available")
+            Spacer(modifier = Modifier.height(5.dp))
+            Switch(
+                checked = juiceAvailability,
+                onCheckedChange = { juiceAvailability = it },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colors.primary,
+                    uncheckedThumbColor = MaterialTheme.colors.onSurface
+                )
+            )
+            Row(horizontalArrangement = Arrangement.Center) {
+                Button(onClick = {
+                    coroutineScope.launch {
+                        bottomSheetState.hide()
+                        val drink = Drink(
+                            drinkId = UUID.randomUUID().toString(),
+                            drinkName = juiceName,
+                            drinkImage = juiceImage,
+                            isAvailable = juiceAvailability
+                        )
+                        juiceVendorViewModel.addNewDrink(drink = drink)
+                        juiceVendorViewModel.updateAddJuiceComposableVisibility(status = false)
+                    }
+                }, enabled = juiceName.isNotEmpty(), modifier = Modifier.fillMaxWidth(0.3f)) {
+                    Text("Save")
                 }
-            }, enabled = juiceName.isNotEmpty(), modifier = Modifier.fillMaxWidth(0.3f)) {
-                Text("Save")
             }
         }
         Spacer(modifier = Modifier.height(16.dp))

@@ -58,6 +58,7 @@ fun LoginComposable(authViewModel: AuthViewModel, coroutineScope: CoroutineScope
 
         OutlinedTextField(
             value = email,
+            singleLine = true,
             isError = email.isEmpty(),
             onValueChange = { email = it },
             label = { Text("Email") },
@@ -72,6 +73,7 @@ fun LoginComposable(authViewModel: AuthViewModel, coroutineScope: CoroutineScope
 
         OutlinedTextField(
             value = password,
+            singleLine = true,
             isError = password.isEmpty(),
             onValueChange = { password = it },
             label = { Text("Password") },
