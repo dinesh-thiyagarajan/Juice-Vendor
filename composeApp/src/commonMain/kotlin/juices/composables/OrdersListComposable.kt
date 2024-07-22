@@ -40,7 +40,7 @@ fun OrdersListComposable(juiceVendorViewModel: JuiceVendorViewModel) {
 
     LaunchedEffect(juiceVendorViewModel) {
         coroutineScope.launch {
-            juiceVendorViewModel.refreshDrinkOrdersWithAutoTimeInterval()
+            juiceVendorViewModel.getDrinkOrders()
         }
     }
 
