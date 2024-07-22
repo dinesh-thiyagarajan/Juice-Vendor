@@ -18,19 +18,19 @@ class JuiceVendorRepository(
     private val firebaseDatabase: FirebaseDatabase = Firebase.database,
     private val ordersCollection: String = "${Config.BASE_LOCATION}/${Config.ORDERS_COLLECTION}",
     private val juicesCollection: String = "${Config.BASE_LOCATION}/${Config.JUICES_COLLECTION}",
-    private val currentDateInnerCollection: String? = SimpleDateFormat(
-        Config.DATE_FORMAT,
-        Locale.getDefault()
-    ).format(
-        Date()
-    )
 ) {
 
     suspend fun getDrinkOrders() = flow {
         val ordersList: MutableList<Order> = mutableListOf()
         try {
+            val currentDateInnerCollection: String? = SimpleDateFormat(
+                Config.DATE_FORMAT,
+                Locale.getDefault()
+            ).format(
+                Date()
+            )
             val collectionReference =
-                firebaseDatabase.reference("$ordersCollection/$currentDateInnerCollection").orderByKey()
+                firebaseDatabase.reference("$ordersCollection/$currentDateInnerCollection")
 
             collectionReference.valueEvents.collect { snapshot ->
                 ordersList.clear()
@@ -40,15 +40,18 @@ class JuiceVendorRepository(
                         val drinkName = orderEntry["drinkName"]
                         val orderCount = orderEntry["orderCount"]
                         val drinkImage = orderEntry["drinkImage"]
+                        val orderTimeStamp = orderEntry["orderTimeStamp"]
                         val order = Order(
                             drinkId = drinkId.toString(),
                             drinkImage = drinkImage.toString(),
                             drinkName = drinkName.toString(),
-                            orderCount = orderCount.toString().toInt()
+                            orderCount = orderCount.toString().toInt(),
+                            orderTimeStamp = orderTimeStamp as Long
                         )
                         ordersList.add(order)
                     }
                 }
+                ordersList.sortBy { it.orderTimeStamp }
                 emit(Response(status = Status.Success, data = ordersList))
             }
         } catch (ex: Exception) {
