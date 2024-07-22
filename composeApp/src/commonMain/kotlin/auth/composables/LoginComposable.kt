@@ -37,8 +37,8 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun LoginComposable(authViewModel: AuthViewModel, coroutineScope: CoroutineScope) {
 
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("dineshkarthie@gmail.com") }
+    var password by remember { mutableStateOf("dinesh12345") }
 
     Column(
         modifier = Modifier

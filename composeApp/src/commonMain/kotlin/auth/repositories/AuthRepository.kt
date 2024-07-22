@@ -54,7 +54,14 @@ class AuthRepository(
         ref.child(user.id).removeValue()
     }
 
-    private suspend fun getCurrentLoggedInUserEmail() = Firebase.auth.currentUser?.email
+    private fun getCurrentLoggedInUserEmail(): String? {
+        try {
+            return Firebase.auth.currentUser?.email
+        } catch (ex: Throwable) {
+            println(ex.localizedMessage)
+            return null
+        }
+    }
 
     private suspend fun checkAdminEmailList(
         currentUserMailId: String?

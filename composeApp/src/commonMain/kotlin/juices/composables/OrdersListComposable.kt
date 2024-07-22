@@ -38,9 +38,9 @@ fun OrdersListComposable(juiceVendorViewModel: JuiceVendorViewModel) {
 
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(juiceVendorViewModel) {
+    LaunchedEffect(Unit) {
         coroutineScope.launch {
-            juiceVendorViewModel.refreshDrinkOrdersWithAutoTimeInterval()
+            juiceVendorViewModel.getDrinkOrders()
         }
     }
 

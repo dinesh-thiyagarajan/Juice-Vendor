@@ -8,12 +8,9 @@ import data.Report
 import data.Status
 import juices.repositories.JuiceVendorRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-
-const val JUICE_REFRESH_TIME_IN_MS = 5000L
 
 class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorRepository) : ViewModel() {
 
@@ -65,15 +62,6 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
         _showAddNewUserComposable.value = status
     }
 
-    suspend fun refreshDrinkOrdersWithAutoTimeInterval() {
-        viewModelScope.launch(Dispatchers.IO) {
-            while (true) {
-                getDrinkOrders()
-                delay(JUICE_REFRESH_TIME_IN_MS)
-            }
-        }
-    }
-
     fun onJuiceAvailabilityUpdated(availability: Boolean, drinkId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val updatedList = drinksList.value.map { drink ->
@@ -94,9 +82,9 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
 
     suspend fun getDrinkOrders() {
         viewModelScope.launch(Dispatchers.IO) {
-            juiceVendorRepository.getDrinkOrders().data?.reversed()?.let {
-                _orders.value = it
-                calculateTotalOrdersCount(it)
+            juiceVendorRepository.getDrinkOrders().collect {
+                _orders.value = it.data?.reversed()!!
+                calculateTotalOrdersCount(it.data)
             }
         }
     }
