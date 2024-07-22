@@ -20,7 +20,8 @@ class JuiceVendorRepository(
     private val juicesCollection: String = "${Config.BASE_LOCATION}/${Config.JUICES_COLLECTION}",
 ) {
 
-    suspend fun getDrinkOrders() = flow {
+
+    suspend fun getDrinkOrders(): Response<List<Order>> {
         val ordersList: MutableList<Order> = mutableListOf()
         try {
             val currentDateInnerCollection: String? = SimpleDateFormat(
@@ -29,33 +30,30 @@ class JuiceVendorRepository(
             ).format(
                 Date()
             )
-            val collectionReference =
+            val ref =
                 firebaseDatabase.reference("$ordersCollection/$currentDateInnerCollection")
-
-            collectionReference.valueEvents.collect { snapshot ->
-                ordersList.clear()
-                (snapshot.value as HashMap<*, *>).entries.forEach { orders ->
-                    (orders.value as HashMap<*, *>).values.forEach { orderEntry ->
-                        val drinkId = (orderEntry as HashMap<*, *>)["drinkId"]
-                        val drinkName = orderEntry["drinkName"]
-                        val orderCount = orderEntry["orderCount"]
-                        val drinkImage = orderEntry["drinkImage"]
-                        val orderTimeStamp = orderEntry["orderTimeStamp"]
-                        val order = Order(
-                            drinkId = drinkId.toString(),
-                            drinkImage = drinkImage.toString(),
-                            drinkName = drinkName.toString(),
-                            orderCount = orderCount.toString().toInt(),
-                            orderTimeStamp = orderTimeStamp as Long
-                        )
-                        ordersList.add(order)
-                    }
+            val dataSnapshot = Tasks.await(ref.android.orderByKey().get())
+            for (snapshot in dataSnapshot.children) {
+                (snapshot.value as Map<*, *>).entries.forEach { entry ->
+                    val drinkId = (entry.value as HashMap<*, *>)["drinkId"]
+                    val drinkName = (entry.value as HashMap<*, *>)["drinkName"]
+                    val orderCount = (entry.value as HashMap<*, *>)["orderCount"]
+                    val drinkImage = (entry.value as HashMap<*, *>)["drinkImage"]
+                    val orderTimeStamp = (entry.value as HashMap<*, *>)["orderTimeStamp"]
+                    val order = Order(
+                        drinkId = drinkId.toString(),
+                        drinkImage = drinkImage.toString(),
+                        drinkName = drinkName.toString(),
+                        orderTimeStamp = orderTimeStamp as Long,
+                        orderCount = orderCount.toString().toInt()
+                    )
+                    ordersList.add(order)
                 }
-                ordersList.sortBy { it.orderTimeStamp }
-                emit(Response(status = Status.Success, data = ordersList))
             }
+            ordersList.sortBy { it.orderTimeStamp }
+            return Response(status = Status.Success, data = ordersList)
         } catch (ex: Exception) {
-            emit(Response(status = Status.Error, data = ordersList, message = ex.localizedMessage))
+            return Response(status = Status.Error, message = ex.message)
         }
     }
 
