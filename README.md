@@ -26,7 +26,7 @@
 - Run the app
 
 # Product Spec
-- The App will make the API call to the backend every five seconds to get the updated orders
+- The app listens to the [Juice Kadai](https://github.com/dinesh-thiyagarajan/Juice-Kadai) app to check and display new orders automatically
 - Reports for the current day can be seen in the report section
 - New Juices can be added from the Add new Juice screen
 - Juices availability can be updated from the same screen
