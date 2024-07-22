@@ -10,8 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-const val COLLECTION_USERS = "Users"
-
 class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
     val authUiState: StateFlow<AuthUiState> get() = _authUiState
@@ -74,7 +72,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
     suspend fun getUsersList() {
         viewModelScope.launch(Dispatchers.IO) {
-            val usersResponse = authRepository.getUsersList(COLLECTION_USERS)
+            val usersResponse = authRepository.getUsersList()
             when (usersResponse.status) {
                 Status.Loading -> {
                     _getUsersUiState.value = GetUsersUiState.Loading

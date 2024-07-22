@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-const val JUICE_LIST_COLLECTION = "Juices"
 const val JUICE_REFRESH_TIME_IN_MS = 5000L
 
 class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorRepository) : ViewModel() {
@@ -87,7 +86,6 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
             drinksList.value = updatedList.toMutableList()
             _drinksUiState.value = DrinksUiState.Success(drinks = updatedList)
             juiceVendorRepository.updateJuiceAvailability(
-                collection = JUICE_LIST_COLLECTION,
                 drinkId = drinkId,
                 availability = availability
             )
@@ -113,7 +111,7 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
 
     suspend fun addNewDrink(drink: Drink) {
         viewModelScope.launch(Dispatchers.IO) {
-            juiceVendorRepository.addNewDrink(drink = drink, collection = JUICE_LIST_COLLECTION)
+            juiceVendorRepository.addNewDrink(drink = drink)
         }
     }
 
@@ -144,7 +142,7 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
 
     suspend fun getDrinksList() {
         viewModelScope.launch(Dispatchers.IO) {
-            val response = juiceVendorRepository.getDrinksList(JUICE_LIST_COLLECTION)
+            val response = juiceVendorRepository.getDrinksList()
             when (response.status) {
                 Status.Loading -> {
                     _drinksUiState.value = DrinksUiState.Loading

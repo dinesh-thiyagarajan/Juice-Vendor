@@ -1,6 +1,7 @@
 package juices.repositories
 
 import com.google.android.gms.tasks.Tasks
+import data.Config
 import data.Drink
 import data.Order
 import data.Response
@@ -12,17 +13,22 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class JuiceVendorRepository(private val firebaseDatabase: FirebaseDatabase = Firebase.database) {
+class JuiceVendorRepository(
+    private val firebaseDatabase: FirebaseDatabase = Firebase.database,
+    private val ordersCollection: String = "${Config.BASE_LOCATION}/${Config.ORDERS_COLLECTION}",
+    private val juicesCollection: String = "${Config.BASE_LOCATION}/${Config.JUICES_COLLECTION}"
+) {
 
     suspend fun getDrinkOrders(): Response<List<Order>> {
         val formatter = SimpleDateFormat("dd-MM-yy", Locale.getDefault())
         return getDrinkOrders(formatter.format(Date()))
     }
 
-    private suspend fun getDrinkOrders(collection: String): Response<List<Order>> {
+    private suspend fun getDrinkOrders(innerCollection: String): Response<List<Order>> {
         val ordersList: MutableList<Order> = mutableListOf()
         try {
-            val ref = firebaseDatabase.reference("/$collection")
+            val ref =
+                firebaseDatabase.reference("$ordersCollection/$innerCollection")
             val dataSnapshot = Tasks.await(ref.android.orderByKey().get())
             for (snapshot in dataSnapshot.children) {
                 (snapshot.value as Map<*, *>).entries.forEach { entry ->
@@ -45,7 +51,7 @@ class JuiceVendorRepository(private val firebaseDatabase: FirebaseDatabase = Fir
         }
     }
 
-    suspend fun addNewDrink(drink: Drink, collection: String) {
+    suspend fun addNewDrink(drink: Drink) {
         try {
             val drinkMap = mapOf<String, Any>(
                 "drinkId" to drink.drinkId,
@@ -55,7 +61,8 @@ class JuiceVendorRepository(private val firebaseDatabase: FirebaseDatabase = Fir
                 "orderCount" to drink.orderCount,
             )
             val collectionRef =
-                firebaseDatabase.reference("/$collection").child("/${drink.drinkId}")
+                firebaseDatabase.reference(juicesCollection)
+                    .child("/${drink.drinkId}")
             collectionRef.setValue(drinkMap, buildSettings = { encodeDefaults = true })
         } catch (ex: Exception) {
             // handle http, socket exceptions
@@ -64,7 +71,6 @@ class JuiceVendorRepository(private val firebaseDatabase: FirebaseDatabase = Fir
     }
 
     suspend fun updateJuiceAvailability(
-        collection: String,
         drinkId: String,
         availability: Boolean
     ) {
@@ -73,7 +79,8 @@ class JuiceVendorRepository(private val firebaseDatabase: FirebaseDatabase = Fir
                 "isAvailable" to availability
             )
             val collectionRef =
-                firebaseDatabase.reference("/$collection").child("/${drinkId}")
+                firebaseDatabase.reference(juicesCollection)
+                    .child("/${drinkId}")
             collectionRef.updateChildren(
                 update = availabilityMap,
                 buildSettings = { encodeDefaults = true })
@@ -83,10 +90,11 @@ class JuiceVendorRepository(private val firebaseDatabase: FirebaseDatabase = Fir
         }
     }
 
-    suspend fun getDrinksList(collection: String): Response<List<Drink>> {
+    suspend fun getDrinksList(): Response<List<Drink>> {
         val drinksList: MutableList<Drink> = mutableListOf()
         try {
-            val ref = firebaseDatabase.reference("/$collection")
+            val ref =
+                firebaseDatabase.reference(juicesCollection)
             val dataSnapshot = Tasks.await(ref.android.get())
             for (snapshot in dataSnapshot.children) {
                 val drink = snapshot.getValue(Drink::class.java)

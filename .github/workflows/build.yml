@@ -27,6 +27,7 @@ jobs:
           echo "FIREBASE_DB_URL=${{ secrets.FIREBASE_DB_URL }}" >> local.properties
           echo "PRINT_HTTP_LOGS=${{ secrets.PRINT_HTTP_LOGS }}" >> local.properties
           echo "SERVICE_ACCOUNT_ID=${{ secrets.SERVICE_ACCOUNT_ID }}" >> local.properties
+          echo "BASE_LOCATION=${{ secrets.BASE_LOCATION }}" >> local.properties
 
       - name: Create google-services directory
         run: mkdir -p composeApp/src/debug

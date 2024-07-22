@@ -113,12 +113,16 @@ buildkonfig {
         val serviceAccountId: String =
             gradleLocalProperties(rootDir).getProperty("SERVICE_ACCOUNT_ID")
 
+        val baseLocation: String =
+            gradleLocalProperties(rootDir).getProperty("BASE_LOCATION")
+
         buildConfigField(STRING, "PROJECT_ID", projectId)
         buildConfigField(STRING, "FIREBASE_DB_URL", firebaseDatabaseUrl)
         buildConfigField(STRING, "APP_ID", appId)
         buildConfigField(STRING, "API_KEY", apiKey)
         buildConfigField(STRING, "PRINT_HTTP_LOGS", printHttpLogs)
         buildConfigField(STRING, "SERVICE_ACCOUNT_ID", serviceAccountId)
+        buildConfigField(STRING, "BASE_LOCATION", baseLocation)
     }
 }
 

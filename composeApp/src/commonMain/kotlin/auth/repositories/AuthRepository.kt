@@ -2,7 +2,6 @@ package auth.repositories
 
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.toLowerCase
-import auth.viewModels.COLLECTION_USERS
 import com.google.android.gms.tasks.Tasks
 import data.Config
 import data.Response
@@ -18,7 +17,7 @@ import dev.gitlive.firebase.database.database
 class AuthRepository(
     private val firebaseAuth: FirebaseAuth = Firebase.auth,
     private val firebaseDatabase: FirebaseDatabase = Firebase.database,
-    private val usersCollection: String = COLLECTION_USERS
+    private val usersCollection: String = "${Config.BASE_LOCATION}/${Config.USERS_COLLECTION}"
 ) {
 
     suspend fun login(email: String, password: String): Response<Status> {
@@ -90,7 +89,7 @@ class AuthRepository(
     private suspend fun isServiceAccount(): Boolean =
         Config.SERVICE_ACCOUNT_ID == getCurrentLoggedInUserEmail()
 
-    suspend fun getUsersList(usersCollection: String): Response<List<User>> {
+    suspend fun getUsersList(): Response<List<User>> {
         val usersList: MutableList<User> = mutableListOf()
         try {
             val ref = firebaseDatabase.reference("/$usersCollection").orderByKey()
