@@ -90,13 +90,13 @@ class AuthRepository(
         return isAdmin() || isServiceAccount()
     }
 
-    suspend fun allowDeletion(userEmail: String): Boolean =
-        getCurrentLoggedInUserEmail() != userEmail && getCurrentLoggedInUserEmail() != Config.SERVICE_ACCOUNT_ID
+    fun allowDeletion(userEmail: String): Boolean =
+        getCurrentLoggedInUserEmail() != userEmail && userEmail != Config.SERVICE_ACCOUNT_ID
 
-    private suspend fun isServiceAccount(): Boolean =
+    private fun isServiceAccount(): Boolean =
         Config.SERVICE_ACCOUNT_ID == getCurrentLoggedInUserEmail()
 
-    suspend fun getUsersList(): Response<List<User>> {
+    fun getUsersList(): Response<List<User>> {
         val usersList: MutableList<User> = mutableListOf()
         try {
             val ref = firebaseDatabase.reference("/$usersCollection").orderByKey()
