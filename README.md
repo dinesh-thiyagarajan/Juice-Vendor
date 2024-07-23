@@ -21,7 +21,7 @@
 - Sync the gradle and see if you are able to build the project, if successful click on run
 - Create a new project in firebase
 - Copy the PROJECT_ID, APP_ID, API_KEY, FIREBASE_DB_URL from firebase console and paste it in local.properties in their respective fields
-- Add your Service Account email under the key SERVICE_ACCOUNT_ID and add PRINT_HTTP_LOGS="true" in local.properties along with the above given values
+- Add your Service Account email under the key SERVICE_ACCOUNT_ID and add the Root Directory name under this key BASE_LOCATION in local.properties
 - Run this command ./gradlew generateBuildKonfig in the terminal in the root directory of the project, inside composeApp/build/buildkonfig a BuildKonfig file will be generated, any keys and values referenced in the local.properties can be accessed from here
 - Run the app
 
