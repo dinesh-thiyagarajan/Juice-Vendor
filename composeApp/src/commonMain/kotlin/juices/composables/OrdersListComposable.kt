@@ -97,7 +97,7 @@ fun JuiceItem(order: Order) {
                 .fillMaxWidth()
         ) {
             Image(
-                painter = painterResource(getResourceDrawable(order.drinkImage)),
+                painter = painterResource(getResourceDrawable(order.drinkName)),
                 contentDescription = "juiceImage",
                 modifier = Modifier.size(22.dp),
                 contentScale = ContentScale.Fit

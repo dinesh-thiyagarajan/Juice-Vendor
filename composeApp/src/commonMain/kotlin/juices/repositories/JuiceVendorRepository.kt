@@ -47,11 +47,9 @@ class JuiceVendorRepository(
                                     val drinkId = it["drinkId"]
                                     val drinkName = it["drinkName"]
                                     val orderCount = it["orderCount"]
-                                    val drinkImage = it["drinkImage"]
                                     val orderTimeStamp = it["orderTimeStamp"]
                                     val order = Order(
                                         drinkId = drinkId.toString(),
-                                        drinkImage = drinkImage.toString(),
                                         drinkName = drinkName.toString(),
                                         orderTimeStamp = orderTimeStamp as Long,
                                         orderCount = orderCount.toString().toInt()
@@ -87,7 +85,6 @@ class JuiceVendorRepository(
         try {
             val drinkMap = mapOf<String, Any>(
                 "drinkId" to drink.drinkId,
-                "drinkImage" to drink.drinkImage,
                 "drinkName" to drink.drinkName,
                 "isAvailable" to drink.isAvailable,
                 "orderCount" to drink.orderCount,

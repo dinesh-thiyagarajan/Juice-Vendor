@@ -58,7 +58,6 @@ fun AddNewJuiceComposable(juiceVendorViewModel: JuiceVendorViewModel, isAdmin: B
     val coroutineScope = rememberCoroutineScope()
 
     var juiceName by remember { mutableStateOf("") }
-    var juiceImage by remember { mutableStateOf("") }
     var juiceAvailability by remember { mutableStateOf(true) }
 
     Column(
@@ -91,18 +90,6 @@ fun AddNewJuiceComposable(juiceVendorViewModel: JuiceVendorViewModel, isAdmin: B
                 modifier = Modifier.fillMaxWidth(0.8f)
             )
             Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                value = juiceImage,
-                isError = false,
-                onValueChange = { juiceImage = it },
-                label = { Text("Please enter text for juice image") },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next
-                ),
-                modifier = Modifier.fillMaxWidth(0.8f)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
             Text(text = if (juiceAvailability) "Juice is Available" else "Juice is not Available")
             Spacer(modifier = Modifier.height(5.dp))
             Switch(
@@ -120,7 +107,6 @@ fun AddNewJuiceComposable(juiceVendorViewModel: JuiceVendorViewModel, isAdmin: B
                         val drink = Drink(
                             drinkId = UUID.randomUUID().toString(),
                             drinkName = juiceName,
-                            drinkImage = juiceImage,
                             isAvailable = juiceAvailability
                         )
                         juiceVendorViewModel.addNewDrink(drink = drink)

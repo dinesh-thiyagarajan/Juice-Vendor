@@ -114,8 +114,7 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
                     reportMap[drink.drinkId] = Report(
                         drinkId = drink.drinkId,
                         drinkName = drink.drinkName,
-                        orderCount = drink.orderCount,
-                        drinkImage = drink.drinkImage
+                        orderCount = drink.orderCount
                     )
                 } else {
                     // If a report already exists, update the order count
