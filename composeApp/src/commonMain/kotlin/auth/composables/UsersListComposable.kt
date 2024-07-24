@@ -19,8 +19,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import auth.viewModels.AuthViewModel
 import auth.viewModels.GetUsersUiState
-import common.ErrorComposable
-import common.LoadingComposable
+import common.composables.ErrorComposable
+import common.composables.LoadingComposable
 import data.User
 import juicevendor.composeapp.generated.resources.Res
 import juicevendor.composeapp.generated.resources.ic_delete

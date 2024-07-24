@@ -1,8 +1,10 @@
 package juices.composables
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -16,25 +18,39 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.Card
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Text
+import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import common.removeSpacesAndLowerCase
+import common.composables.DateRangePickerComposable
+import common.extensions.removeSpacesAndLowerCase
+import data.Config
 import juices.viewModels.JuiceVendorViewModel
 import juicevendor.composeapp.generated.resources.Res
 import juicevendor.composeapp.generated.resources.ic_apple
@@ -55,71 +71,142 @@ import java.util.Date
 import java.util.Locale
 
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
-
     val totalOrdersCount = juiceVendorViewModel.totalOrdersCount.collectAsState()
     val reportMap = juiceVendorViewModel.reportMap.collectAsState()
     val coroutineScope = rememberCoroutineScope()
+    // Date picker variables
+    val formatter = SimpleDateFormat(Config.DATE_FORMAT, Locale.getDefault())
+    var startDate by remember { mutableStateOf(formatter.format(Date())) }
+    var endDate by remember { mutableStateOf(formatter.format(Date())) }
+    val dateRangePickerState = rememberDateRangePickerState()
+    val bottomSheetState =
+        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
 
-    LaunchedEffect(juiceVendorViewModel) {
-        coroutineScope.launch {
-            juiceVendorViewModel.createOrdersAggregateReport()
-        }
-    }
-
-    val formatter = SimpleDateFormat("dd-MM-yy", Locale.getDefault())
-    Column(modifier = Modifier.padding(10.dp)) {
-        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-            Image(
-                painter = painterResource(Res.drawable.ic_close),
-                contentDescription = null,
-                modifier = Modifier.size(30.dp).clickable {
-                    juiceVendorViewModel.updateReportsComposableVisibility(status = false)
-                },
-                contentScale = ContentScale.Fit
-            )
-        }
-        Spacer(modifier = Modifier.height(10.dp))
-        val firstTextStyle = TextStyle(
-            fontSize = 50.sp,
-            fontWeight = FontWeight.Bold,
-            fontFamily = FontFamily.Serif
-        )
-        val restTextStyle = TextStyle(
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Normal,
-            fontFamily = FontFamily.SansSerif
-        )
-        val orderText = "${totalOrdersCount.value} Orders for ${formatter.format(Date())}"
-        val annotatedString = buildAnnotatedString {
-            withStyle(style = firstTextStyle.toSpanStyle()) {
-                append(orderText.take(totalOrdersCount.value.toString().length))
-            }
-            withStyle(style = restTextStyle.toSpanStyle()) {
-                append(orderText.drop(totalOrdersCount.value.toString().length))
-            }
-        }
-
-        Text(
-            modifier = Modifier.padding(start = 10.dp),
-            text = annotatedString,
-        )
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(8.dp)
-        ) {
-            reportMap.value.forEach { map ->
-                item {
-                    RoundedCardView(
-                        juiceName = map.value.drinkName,
-                        orderCount = map.value.orderCount
-                    )
+    ModalBottomSheetLayout(
+        sheetState = bottomSheetState,
+        sheetContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(600.dp)
+                    .background(Color.White)
+            ) {
+                DateRangePickerComposable(state = dateRangePickerState, showModeToggle = false) {
+                    startDate = formatter.format(dateRangePickerState.selectedStartDateMillis)
+                    endDate = formatter.format(dateRangePickerState.selectedEndDateMillis)
+                    coroutineScope.launch { bottomSheetState.hide() }
+                    coroutineScope.launch {
+                        juiceVendorViewModel.getReportForDateInterval(
+                            startDate = startDate,
+                            endDate = endDate
+                        )
+                    }
                 }
             }
-        }
-    }
+        },
+        content = {
+            Column(modifier = Modifier.padding(10.dp)) {
+                Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                    Image(
+                        painter = painterResource(Res.drawable.ic_close),
+                        contentDescription = null,
+                        modifier = Modifier.size(30.dp).clickable {
+                            juiceVendorViewModel.updateReportsComposableVisibility(status = false)
+                        },
+                        contentScale = ContentScale.Fit
+                    )
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                val firstTextStyle = TextStyle(
+                    fontSize = 50.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Serif
+                )
+                val restTextStyle = TextStyle(
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Normal,
+                    fontFamily = FontFamily.SansSerif
+                )
+
+                val orderText = buildAnnotatedString {
+                    append("${totalOrdersCount.value} Orders for the date interval of ")
+                    pushStringAnnotation(tag = "startDate", annotation = "startDate")
+                    withStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colors.primary,
+                            textDecoration = TextDecoration.Underline
+                        )
+                    ) {
+                        append(startDate)
+                    }
+                    pop()
+                    append(" to ")
+                    pushStringAnnotation(tag = "endDate", annotation = "endDate")
+                    withStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colors.primary,
+                            textDecoration = TextDecoration.Underline
+                        )
+                    ) {
+                        append(endDate)
+                    }
+                    pop()
+                }
+
+                val annotatedString = buildAnnotatedString {
+                    withStyle(style = firstTextStyle.toSpanStyle()) {
+                        append(orderText.take(totalOrdersCount.value.toString().length))
+                    }
+                    withStyle(style = restTextStyle.toSpanStyle()) {
+                        append(orderText.drop(totalOrdersCount.value.toString().length))
+                    }
+                }
+
+
+                ClickableText(
+                    text = annotatedString,
+                    onClick = { offset ->
+                        annotatedString.getStringAnnotations(
+                            tag = "startDate",
+                            start = offset,
+                            end = offset
+                        )
+                            .firstOrNull()?.let {
+                                coroutineScope.launch { bottomSheetState.show() }
+                            }
+                        annotatedString.getStringAnnotations(
+                            tag = "endDate",
+                            start = offset,
+                            end = offset
+                        )
+                            .firstOrNull()?.let {
+                                coroutineScope.launch { bottomSheetState.show() }
+                            }
+                    }
+                )
+
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(8.dp)
+                ) {
+                    reportMap.value.forEach { map ->
+                        item {
+                            RoundedCardView(
+                                juiceName = map.value.drinkName,
+                                orderCount = map.value.orderCount
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        scrimColor = Color.Black.copy(alpha = 0.5f),
+        sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+    )
 }
 
 fun getResourceDrawable(drinkName: String): DrawableResource {

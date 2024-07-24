@@ -18,11 +18,18 @@ kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
 
-    jvm("desktop")
+    //jvm("desktop")
+
+    jvm("desktop") {
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
 
     sourceSets {
         val desktopMain by getting
@@ -39,12 +46,13 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
+            implementation(libs.androidx.material3)
+            implementation(project.dependencies.platform(libs.androidx.compose.bom))
 
             // Firebase Auth and Realtime DB Dependencies
             implementation(libs.gitlive.firebase.auth)
             implementation(libs.firebase.database)
             implementation(libs.androidx.lifecycle.viewmodel)
-
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
@@ -79,8 +87,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         compose = true
@@ -89,6 +97,9 @@ android {
         implementation(libs.navigation.compose)
         debugImplementation(compose.uiTooling)
     }
+}
+dependencies {
+    implementation(libs.androidx.material3.android)
 }
 
 buildkonfig {

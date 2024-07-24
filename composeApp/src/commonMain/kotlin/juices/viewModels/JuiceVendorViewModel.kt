@@ -11,6 +11,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.stream.Collectors
 
 class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorRepository) : ViewModel() {
 
@@ -103,27 +106,36 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
         }
     }
 
-    fun createOrdersAggregateReport() {
+    suspend fun getReportForDateInterval(startDate: String, endDate: String) {
         viewModelScope.launch(Dispatchers.Default) {
             val reportMap: HashMap<String, Report> = hashMapOf()
-
-            for (drink in orders.value) {
-                val currentReport = reportMap[drink.drinkId]
-                if (currentReport == null) {
-                    // If no report exists for this drinkId, create a new Report object
-                    reportMap[drink.drinkId] = Report(
-                        drinkId = drink.drinkId,
-                        drinkName = drink.drinkName,
-                        orderCount = drink.orderCount
-                    )
-                } else {
-                    // If a report already exists, update the order count
-                    reportMap[drink.drinkId] = currentReport.copy(
-                        orderCount = currentReport.orderCount + drink.orderCount
-                    )
+            val datesList = formatDates(startDate = startDate, endDate = endDate)
+            val reportResponse =
+                juiceVendorRepository.getReportForDateInterval(datesList = datesList)
+            when (reportResponse.status) {
+                Status.Loading -> {}
+                Status.Success -> {
+                    reportResponse.data?.forEach { order ->
+                        val currentReport = reportMap[order.drinkId]
+                        if (currentReport == null) {
+                            // If no report exists for this drinkId, create a new Report object
+                            reportMap[order.drinkId] = Report(
+                                drinkId = order.drinkId,
+                                drinkName = order.drinkName,
+                                orderCount = order.orderCount
+                            )
+                        } else {
+                            // If a report already exists, update the order count
+                            reportMap[order.drinkId] = currentReport.copy(
+                                orderCount = currentReport.orderCount + order.orderCount
+                            )
+                        }
+                    }
+                    _reportMap.value = reportMap
                 }
+
+                Status.Error -> {}
             }
-            _reportMap.value = reportMap
         }
     }
 
@@ -148,6 +160,31 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
                 }
             }
         }
+    }
+
+    private fun getInBetweenDates(startDate: String, endDate: String): List<String> {
+        val formatter = DateTimeFormatter.ofPattern("dd-MM-yy")
+        val start = LocalDate.parse(startDate, formatter)
+        val end = LocalDate.parse(endDate, formatter)
+
+        return start.datesUntil(end.plusDays(1))
+            .map { it.format(formatter) }
+            .collect(Collectors.toList())
+    }
+
+    fun formatDates(startDate: String, endDate: String): List<String> {
+        val formatter = DateTimeFormatter.ofPattern("dd-MM-yy")
+        val start = LocalDate.parse(startDate, formatter)
+        val end = LocalDate.parse(endDate, formatter)
+        val dates = mutableListOf<LocalDate>()
+        var currentDate = start
+
+        while (!currentDate.isAfter(end.plusDays(1))) {
+            dates.add(currentDate)
+            currentDate = currentDate.plusDays(1)
+        }
+
+        return dates.map { it.format(formatter) }
     }
 }
 

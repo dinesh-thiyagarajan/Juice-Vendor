@@ -1,6 +1,5 @@
 package juices.repositories
 
-import com.google.android.gms.tasks.Tasks
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -14,6 +13,7 @@ import dev.gitlive.firebase.database.FirebaseDatabase
 import dev.gitlive.firebase.database.database
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -124,12 +124,29 @@ class JuiceVendorRepository(
         try {
             val ref =
                 firebaseDatabase.reference(juicesCollection)
-            val dataSnapshot = Tasks.await(ref.android.get())
+            val dataSnapshot = ref.android.get().await()
             for (snapshot in dataSnapshot.children) {
                 val drink = snapshot.getValue(Drink::class.java)
                 drinksList.add(drink!!)
             }
             return Response(status = Status.Success, data = drinksList)
+        } catch (ex: Exception) {
+            return Response(status = Status.Error, message = ex.message)
+        }
+    }
+
+    suspend fun getReportForDateInterval(datesList: List<String>): Response<MutableList<Drink>> {
+        val ordersList = mutableListOf<Drink>()
+        try {
+            val collectionReference = firebaseDatabase.reference(ordersCollection)
+            repeat(datesList.size) {
+                val dataSnapshot = collectionReference.child(datesList[it]).android.get().await()
+                for (snapshot in dataSnapshot.children) {
+                    val order = snapshot.getValue(Drink::class.java)
+                    order?.let { order -> ordersList.add(order) }
+                }
+            }
+            return Response(status = Status.Success, data = ordersList)
         } catch (ex: Exception) {
             return Response(status = Status.Error, message = ex.message)
         }

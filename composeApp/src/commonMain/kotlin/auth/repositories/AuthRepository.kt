@@ -13,6 +13,7 @@ import dev.gitlive.firebase.auth.FirebaseAuth
 import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.database.FirebaseDatabase
 import dev.gitlive.firebase.database.database
+import kotlinx.coroutines.tasks.await
 
 class AuthRepository(
     private val firebaseAuth: FirebaseAuth = Firebase.auth,
@@ -96,11 +97,11 @@ class AuthRepository(
     private fun isServiceAccount(): Boolean =
         Config.SERVICE_ACCOUNT_ID == getCurrentLoggedInUserEmail()
 
-    fun getUsersList(): Response<List<User>> {
+    suspend fun getUsersList(): Response<List<User>> {
         val usersList: MutableList<User> = mutableListOf()
         try {
             val ref = firebaseDatabase.reference("/$usersCollection").orderByKey()
-            val dataSnapshot = Tasks.await(ref.android.get())
+            val dataSnapshot = ref.android.get().await()
             for (snapshot in dataSnapshot.children) {
                 val user = snapshot.getValue(User::class.java)
                 user?.let {
