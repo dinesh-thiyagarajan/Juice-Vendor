@@ -104,6 +104,10 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
         }
     }
 
+    suspend fun onReportExportButtonClicked() {
+
+    }
+
     suspend fun getReportForDateInterval(startDate: String, endDate: String) {
         viewModelScope.launch(Dispatchers.Default) {
             _reportsUiState.value = ReportsUiState.Loading

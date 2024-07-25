@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -46,6 +47,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -62,6 +64,7 @@ import juicevendor.composeapp.generated.resources.ic_apple
 import juicevendor.composeapp.generated.resources.ic_banana
 import juicevendor.composeapp.generated.resources.ic_close
 import juicevendor.composeapp.generated.resources.ic_coffee
+import juicevendor.composeapp.generated.resources.ic_export
 import juicevendor.composeapp.generated.resources.ic_fruit_bowl
 import juicevendor.composeapp.generated.resources.ic_generic_juice
 import juicevendor.composeapp.generated.resources.ic_lemon
@@ -140,7 +143,11 @@ fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
                 Spacer(modifier = Modifier.height(10.dp))
                 when (reportUiState.value) {
                     is ReportsUiState.Loading -> {
-                        LoadingComposable()
+                        Row(
+                            modifier = Modifier.align(Alignment.CenterHorizontally).padding(20.dp)
+                        ) {
+                            LoadingComposable()
+                        }
                     }
 
                     is ReportsUiState.Success -> {
@@ -148,6 +155,35 @@ fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
                             (reportUiState.value as ReportsUiState.Success).reportsHashMap
                         totalOrderCount =
                             (reportUiState.value as ReportsUiState.Success).totalOrderCount
+                        if (reportHashMap.isEmpty()) {
+                            Row(
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                                    .padding(20.dp)
+                            ) {
+                                Text("No Orders can be found for the given date range, Please try different date range")
+                            }
+                        }
+                        if (reportHashMap.isNotEmpty()) {
+                            Row(
+                                modifier = Modifier.align(Alignment.End)
+                                    .clickable {
+                                        coroutineScope.launch {
+                                            juiceVendorViewModel.onReportExportButtonClicked()
+                                        }
+                                    }
+                                    .padding(horizontal = 20.dp, vertical = 5.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Export", textAlign = TextAlign.Center)
+                                Spacer(modifier = Modifier.width(5.dp))
+                                Image(
+                                    painter = painterResource(Res.drawable.ic_export),
+                                    contentDescription = "export",
+                                    modifier = Modifier.size(15.dp),
+                                    contentScale = ContentScale.Fit
+                                )
+                            }
+                        }
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
                             modifier = Modifier.fillMaxSize(),
