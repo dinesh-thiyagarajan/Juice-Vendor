@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.stream.Collectors
 
 class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorRepository) : ViewModel() {
 
@@ -33,10 +32,9 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
     val totalOrdersCount: StateFlow<Int> get() = _totalOrdersCount
     private val _totalOrdersCount: MutableStateFlow<Int> = MutableStateFlow(0)
 
-    val reportMap: StateFlow<HashMap<String, Report>> get() = _reportMap
-    private val _reportMap: MutableStateFlow<HashMap<String, Report>> = MutableStateFlow(
-        hashMapOf()
-    )
+    val reportsUiState: StateFlow<ReportsUiState> get() = _reportsUiState
+    private val _reportsUiState: MutableStateFlow<ReportsUiState> =
+        MutableStateFlow(ReportsUiState.Loading)
 
     val showAddJuiceComposable: StateFlow<Boolean> get() = _showAddJuiceComposable
     private val _showAddJuiceComposable: MutableStateFlow<Boolean> = MutableStateFlow(
@@ -108,14 +106,18 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
 
     suspend fun getReportForDateInterval(startDate: String, endDate: String) {
         viewModelScope.launch(Dispatchers.Default) {
+            _reportsUiState.value = ReportsUiState.Loading
             val reportMap: HashMap<String, Report> = hashMapOf()
-            val datesList = formatDates(startDate = startDate, endDate = endDate)
+            val datesList = getInBetweenDates(startDate = startDate, endDate = endDate)
             val reportResponse =
                 juiceVendorRepository.getReportForDateInterval(datesList = datesList)
             when (reportResponse.status) {
-                Status.Loading -> {}
+                Status.Loading -> {
+                    _reportsUiState.value = ReportsUiState.Loading
+                }
+
                 Status.Success -> {
-                    reportResponse.data?.forEach { order ->
+                    reportResponse.data?.second?.forEach { order ->
                         val currentReport = reportMap[order.drinkId]
                         if (currentReport == null) {
                             // If no report exists for this drinkId, create a new Report object
@@ -131,10 +133,16 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
                             )
                         }
                     }
-                    _reportMap.value = reportMap
+                    _reportsUiState.value = ReportsUiState.Success(
+                        reportsHashMap = reportMap,
+                        totalOrderCount = reportResponse.data?.first ?: 0
+                    )
                 }
 
-                Status.Error -> {}
+                Status.Error -> {
+                    _reportsUiState.value =
+                        ReportsUiState.Error(message = "Error while fetching the report")
+                }
             }
         }
     }
@@ -166,16 +174,6 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
         val formatter = DateTimeFormatter.ofPattern("dd-MM-yy")
         val start = LocalDate.parse(startDate, formatter)
         val end = LocalDate.parse(endDate, formatter)
-
-        return start.datesUntil(end.plusDays(1))
-            .map { it.format(formatter) }
-            .collect(Collectors.toList())
-    }
-
-    fun formatDates(startDate: String, endDate: String): List<String> {
-        val formatter = DateTimeFormatter.ofPattern("dd-MM-yy")
-        val start = LocalDate.parse(startDate, formatter)
-        val end = LocalDate.parse(endDate, formatter)
         val dates = mutableListOf<LocalDate>()
         var currentDate = start
 
@@ -192,4 +190,12 @@ sealed interface DrinksUiState {
     data object Loading : DrinksUiState
     data class Success(val drinks: List<Drink>) : DrinksUiState
     data class Error(val message: String?) : DrinksUiState
+}
+
+sealed interface ReportsUiState {
+    data object Loading : ReportsUiState
+    data class Success(val reportsHashMap: HashMap<String, Report>, val totalOrderCount: Int) :
+        ReportsUiState
+
+    data class Error(val message: String?) : ReportsUiState
 }

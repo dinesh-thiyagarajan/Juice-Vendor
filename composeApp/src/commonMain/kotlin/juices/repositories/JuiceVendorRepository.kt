@@ -135,18 +135,35 @@ class JuiceVendorRepository(
         }
     }
 
-    suspend fun getReportForDateInterval(datesList: List<String>): Response<MutableList<Drink>> {
-        val ordersList = mutableListOf<Drink>()
+    suspend fun getReportForDateInterval(datesList: List<String>): Response<Pair<Int, MutableList<Order>>> {
+        val ordersList = mutableListOf<Order>()
+        var totalOrderCount = 0
         try {
             val collectionReference = firebaseDatabase.reference(ordersCollection)
             repeat(datesList.size) {
                 val dataSnapshot = collectionReference.child(datesList[it]).android.get().await()
                 for (snapshot in dataSnapshot.children) {
-                    val order = snapshot.getValue(Drink::class.java)
-                    order?.let { order -> ordersList.add(order) }
+                    val entryMap = snapshot.value as? Map<*, *>
+                    entryMap?.entries?.forEach { entry ->
+                        val entryValue = entry.value as? HashMap<*, *>
+                        entryValue?.let { value ->
+                            val drinkId = value["drinkId"]
+                            val drinkName = value["drinkName"]
+                            val orderCount = value["orderCount"].toString().toIntOrNull() ?: 0
+                            val orderTimeStamp = value["orderTimeStamp"]
+                            totalOrderCount += orderCount
+                            val order = Order(
+                                drinkId = drinkId.toString(),
+                                drinkName = drinkName.toString(),
+                                orderTimeStamp = orderTimeStamp as Long,
+                                orderCount = orderCount
+                            )
+                            ordersList.add(order)
+                        }
+                    }
                 }
             }
-            return Response(status = Status.Success, data = ordersList)
+            return Response(status = Status.Success, data = Pair(totalOrderCount, ordersList))
         } catch (ex: Exception) {
             return Response(status = Status.Error, message = ex.message)
         }

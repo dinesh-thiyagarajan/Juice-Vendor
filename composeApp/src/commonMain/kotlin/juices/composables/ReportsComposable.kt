@@ -23,12 +23,14 @@ import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,9 +51,12 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import common.composables.DateRangePickerComposable
+import common.composables.ErrorComposable
+import common.composables.LoadingComposable
 import common.extensions.removeSpacesAndLowerCase
 import data.Config
 import juices.viewModels.JuiceVendorViewModel
+import juices.viewModels.ReportsUiState
 import juicevendor.composeapp.generated.resources.Res
 import juicevendor.composeapp.generated.resources.ic_apple
 import juicevendor.composeapp.generated.resources.ic_banana
@@ -63,6 +68,7 @@ import juicevendor.composeapp.generated.resources.ic_lemon
 import juicevendor.composeapp.generated.resources.ic_orange
 import juicevendor.composeapp.generated.resources.ic_tea
 import juicevendor.composeapp.generated.resources.ic_watermelon
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -74,16 +80,20 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
-    val totalOrdersCount = juiceVendorViewModel.totalOrdersCount.collectAsState()
-    val reportMap = juiceVendorViewModel.reportMap.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     // Date picker variables
     val formatter = SimpleDateFormat(Config.DATE_FORMAT, Locale.getDefault())
     var startDate by remember { mutableStateOf(formatter.format(Date())) }
     var endDate by remember { mutableStateOf(formatter.format(Date())) }
+    var totalOrderCount by remember { mutableStateOf(0) }
     val dateRangePickerState = rememberDateRangePickerState()
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val reportUiState = juiceVendorViewModel.reportsUiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        juiceVendorViewModel.getReportForDateInterval(startDate = startDate, endDate = endDate)
+    }
 
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
@@ -97,8 +107,8 @@ fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
                 DateRangePickerComposable(state = dateRangePickerState, showModeToggle = false) {
                     startDate = formatter.format(dateRangePickerState.selectedStartDateMillis)
                     endDate = formatter.format(dateRangePickerState.selectedEndDateMillis)
-                    coroutineScope.launch { bottomSheetState.hide() }
                     coroutineScope.launch {
+                        bottomSheetState.hide()
                         juiceVendorViewModel.getReportForDateInterval(
                             startDate = startDate,
                             endDate = endDate
@@ -120,92 +130,125 @@ fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
                     )
                 }
                 Spacer(modifier = Modifier.height(10.dp))
-                val firstTextStyle = TextStyle(
-                    fontSize = 50.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Serif
+                ReportHeader(
+                    startDate = startDate,
+                    endDate = endDate,
+                    totalOrdersCount = totalOrderCount,
+                    coroutineScope = coroutineScope,
+                    bottomSheetState = bottomSheetState
                 )
-                val restTextStyle = TextStyle(
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Normal,
-                    fontFamily = FontFamily.SansSerif
-                )
-
-                val orderText = buildAnnotatedString {
-                    append("${totalOrdersCount.value} Orders for the date interval of ")
-                    pushStringAnnotation(tag = "startDate", annotation = "startDate")
-                    withStyle(
-                        style = SpanStyle(
-                            color = MaterialTheme.colors.primary,
-                            textDecoration = TextDecoration.Underline
-                        )
-                    ) {
-                        append(startDate)
+                Spacer(modifier = Modifier.height(10.dp))
+                when (reportUiState.value) {
+                    is ReportsUiState.Loading -> {
+                        LoadingComposable()
                     }
-                    pop()
-                    append(" to ")
-                    pushStringAnnotation(tag = "endDate", annotation = "endDate")
-                    withStyle(
-                        style = SpanStyle(
-                            color = MaterialTheme.colors.primary,
-                            textDecoration = TextDecoration.Underline
-                        )
-                    ) {
-                        append(endDate)
-                    }
-                    pop()
-                }
 
-                val annotatedString = buildAnnotatedString {
-                    withStyle(style = firstTextStyle.toSpanStyle()) {
-                        append(orderText.take(totalOrdersCount.value.toString().length))
-                    }
-                    withStyle(style = restTextStyle.toSpanStyle()) {
-                        append(orderText.drop(totalOrdersCount.value.toString().length))
-                    }
-                }
-
-
-                ClickableText(
-                    text = annotatedString,
-                    onClick = { offset ->
-                        annotatedString.getStringAnnotations(
-                            tag = "startDate",
-                            start = offset,
-                            end = offset
-                        )
-                            .firstOrNull()?.let {
-                                coroutineScope.launch { bottomSheetState.show() }
+                    is ReportsUiState.Success -> {
+                        val reportHashMap =
+                            (reportUiState.value as ReportsUiState.Success).reportsHashMap
+                        totalOrderCount =
+                            (reportUiState.value as ReportsUiState.Success).totalOrderCount
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(2),
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(8.dp)
+                        ) {
+                            reportHashMap.forEach { map ->
+                                item {
+                                    RoundedCardView(
+                                        juiceName = map.value.drinkName,
+                                        orderCount = map.value.orderCount
+                                    )
+                                }
                             }
-                        annotatedString.getStringAnnotations(
-                            tag = "endDate",
-                            start = offset,
-                            end = offset
-                        )
-                            .firstOrNull()?.let {
-                                coroutineScope.launch { bottomSheetState.show() }
-                            }
-                    }
-                )
-
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(8.dp)
-                ) {
-                    reportMap.value.forEach { map ->
-                        item {
-                            RoundedCardView(
-                                juiceName = map.value.drinkName,
-                                orderCount = map.value.orderCount
-                            )
                         }
+                    }
+
+                    is ReportsUiState.Error -> {
+                        ErrorComposable()
                     }
                 }
             }
         },
         scrimColor = Color.Black.copy(alpha = 0.5f),
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+    )
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun ReportHeader(
+    startDate: String,
+    endDate: String,
+    totalOrdersCount: Int,
+    coroutineScope: CoroutineScope,
+    bottomSheetState: ModalBottomSheetState
+) {
+    val firstTextStyle = TextStyle(
+        fontSize = 50.sp,
+        fontWeight = FontWeight.Bold,
+        fontFamily = FontFamily.Serif
+    )
+    val restTextStyle = TextStyle(
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Normal,
+        fontFamily = FontFamily.SansSerif
+    )
+
+    val orderText = buildAnnotatedString {
+        append("$totalOrdersCount Orders for the date interval of ")
+        pushStringAnnotation(tag = "startDate", annotation = "startDate")
+        withStyle(
+            style = SpanStyle(
+                color = MaterialTheme.colors.primary,
+                textDecoration = TextDecoration.Underline
+            )
+        ) {
+            append(startDate)
+        }
+        pop()
+        append(" to ")
+        pushStringAnnotation(tag = "endDate", annotation = "endDate")
+        withStyle(
+            style = SpanStyle(
+                color = MaterialTheme.colors.primary,
+                textDecoration = TextDecoration.Underline
+            )
+        ) {
+            append(endDate)
+        }
+        pop()
+    }
+
+    val annotatedString = buildAnnotatedString {
+        withStyle(style = firstTextStyle.toSpanStyle()) {
+            append(orderText.take(totalOrdersCount.toString().length))
+        }
+        withStyle(style = restTextStyle.toSpanStyle()) {
+            append(orderText.drop(totalOrdersCount.toString().length))
+        }
+    }
+
+    ClickableText(
+        text = annotatedString,
+        onClick = { offset ->
+            annotatedString.getStringAnnotations(
+                tag = "startDate",
+                start = offset,
+                end = offset
+            )
+                .firstOrNull()?.let {
+                    coroutineScope.launch { bottomSheetState.show() }
+                }
+            annotatedString.getStringAnnotations(
+                tag = "endDate",
+                start = offset,
+                end = offset
+            )
+                .firstOrNull()?.let {
+                    coroutineScope.launch { bottomSheetState.show() }
+                }
+        }
     )
 }
 
