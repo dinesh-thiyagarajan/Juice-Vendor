@@ -187,15 +187,19 @@ class JuiceVendorRepository(
         exportData.appendLine(header.joinToString(","))
 
         // Generate the CSV data for each date group
+        var combinedTotalOrders = 0
         reportsByDate.forEach { (date, reports) ->
             val countsByJuice = juiceNames.map { juiceName ->
                 reports.filter { it.drinkName == juiceName }.sumBy { it.orderCount }
             }
             val total = countsByJuice.sum()
+            combinedTotalOrders += total
             val row = listOf(date.toString()) + countsByJuice + total
             exportData.appendLine(row.joinToString(","))
         }
-
+        // Add a total row at the end
+        val totalRow = listOf("Total no of orders") + List(juiceNames.size) { "" } + combinedTotalOrders
+        exportData.appendLine(totalRow.joinToString(","))
         // Emit the generated CSV data
         emit(exportData.toString())
     }
