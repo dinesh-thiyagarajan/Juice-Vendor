@@ -183,6 +183,7 @@ fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
                                             textAlign = TextAlign.Center,
                                             fontSize = 15.sp
                                         )
+                                        Spacer(modifier = Modifier.width(2.dp))
                                         Image(
                                             painter = painterResource(Res.drawable.ic_export),
                                             contentDescription = "export",
@@ -190,7 +191,6 @@ fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
                                             contentScale = ContentScale.Fit
                                         )
                                     }
-                                    Spacer(modifier = Modifier.height(5.dp))
                                     Text(
                                         "(works only on android for now)",
                                         textAlign = TextAlign.Center,
@@ -247,7 +247,7 @@ fun ReportHeader(
     val firstTextStyle = TextStyle(
         fontSize = 50.sp,
         fontWeight = FontWeight.Bold,
-        fontFamily = FontFamily.Serif
+        fontFamily = FontFamily.SansSerif
     )
     val restTextStyle = TextStyle(
         fontSize = 16.sp,
@@ -291,6 +291,7 @@ fun ReportHeader(
 
     ClickableText(
         text = annotatedString,
+        modifier = Modifier.padding(horizontal = 20.dp),
         onClick = { offset ->
             annotatedString.getStringAnnotations(
                 tag = "startDate",

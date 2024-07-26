@@ -50,7 +50,7 @@ fun OrdersListComposable(juiceVendorViewModel: JuiceVendorViewModel) {
         val firstTextStyle = TextStyle(
             fontSize = 50.sp,
             fontWeight = FontWeight.Bold,
-            fontFamily = FontFamily.Serif
+            fontFamily = FontFamily.SansSerif
         )
         val restTextStyle = TextStyle(
             fontSize = 16.sp,
