@@ -8,6 +8,7 @@ import data.Order
 import data.Report
 import data.Status
 import file.FilesRepository
+import file.Platform
 import juices.repositories.JuiceVendorRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -120,9 +121,10 @@ class JuiceVendorViewModel(
                 (_generateReportUiState.value as GenerateReportUiState.Success).reportsHashMap
             juiceVendorRepository.prepareJuiceDataForExport(reportHashMap = reportHash)
                 .collect { fileContent ->
-                    val fileResponse = filesRepository.createCSVFile(fileContent = fileContent)
-                    val fileUri = fileResponse.second
-                    //showReportShareOption.value =
+                    val generatedFile = filesRepository.createCSVFile(fileContent = fileContent)
+                    generatedFile?.let {
+                        Platform.fileSharingService.shareFile(it)
+                    }
                 }
         }
     }
