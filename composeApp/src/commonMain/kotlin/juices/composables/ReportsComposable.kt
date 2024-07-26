@@ -3,7 +3,6 @@ package juices.composables
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -55,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import common.composables.DateRangePickerComposable
 import common.composables.ErrorComposable
 import common.composables.LoadingComposable
+import common.composables.TopAppBarComposable
 import common.extensions.removeSpacesAndLowerCase
 import data.Config
 import juices.viewModels.ExportReportUiState
@@ -63,7 +63,6 @@ import juices.viewModels.JuiceVendorViewModel
 import juicevendor.composeapp.generated.resources.Res
 import juicevendor.composeapp.generated.resources.ic_apple
 import juicevendor.composeapp.generated.resources.ic_banana
-import juicevendor.composeapp.generated.resources.ic_close
 import juicevendor.composeapp.generated.resources.ic_coffee
 import juicevendor.composeapp.generated.resources.ic_export
 import juicevendor.composeapp.generated.resources.ic_fruit_bowl
@@ -124,16 +123,9 @@ fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
         },
         content = {
             Column(modifier = Modifier.padding(10.dp)) {
-                Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                    Image(
-                        painter = painterResource(Res.drawable.ic_close),
-                        contentDescription = null,
-                        modifier = Modifier.size(30.dp).clickable {
-                            juiceVendorViewModel.updateReportsComposableVisibility(status = false)
-                        },
-                        contentScale = ContentScale.Fit
-                    )
-                }
+                TopAppBarComposable(onCloseButtonClicked = {
+                    juiceVendorViewModel.updateReportsComposableVisibility(status = false)
+                })
                 Spacer(modifier = Modifier.height(10.dp))
                 ReportHeader(
                     startDate = startDate,
@@ -172,7 +164,10 @@ fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
                                         modifier = Modifier.align(Alignment.End)
                                             .clickable {
                                                 coroutineScope.launch {
-                                                    juiceVendorViewModel.onReportExportButtonClicked(startDate = startDate, endDate = endDate)
+                                                    juiceVendorViewModel.onReportExportButtonClicked(
+                                                        startDate = startDate,
+                                                        endDate = endDate
+                                                    )
                                                 }
                                             }
                                             .padding(horizontal = 20.dp),

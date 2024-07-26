@@ -1,7 +1,6 @@
 package juices.composables
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,12 +38,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import common.composables.TopAppBarComposable
 import data.Drink
 import juices.viewModels.DrinksUiState
 import juices.viewModels.JuiceVendorViewModel
 import juicevendor.composeapp.generated.resources.Res
 import juicevendor.composeapp.generated.resources.ic_404
-import juicevendor.composeapp.generated.resources.ic_close
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -66,16 +65,9 @@ fun AddNewJuiceComposable(juiceVendorViewModel: JuiceVendorViewModel, isAdmin: B
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-            Image(
-                painter = painterResource(Res.drawable.ic_close),
-                contentDescription = null,
-                modifier = Modifier.size(30.dp).clickable {
-                    juiceVendorViewModel.updateAddJuiceComposableVisibility(status = false)
-                },
-                contentScale = ContentScale.Fit
-            )
-        }
+        TopAppBarComposable(onCloseButtonClicked = {
+            juiceVendorViewModel.updateAddJuiceComposableVisibility(status = false)
+        })
         Spacer(modifier = Modifier.height(20.dp))
         if (isAdmin) {
             OutlinedTextField(
