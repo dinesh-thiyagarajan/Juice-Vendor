@@ -109,14 +109,20 @@ fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
                     .background(Color.White)
             ) {
                 DateRangePickerComposable(state = dateRangePickerState, showModeToggle = false) {
-                    startDate = formatter.format(dateRangePickerState.selectedStartDateMillis)
-                    endDate = formatter.format(dateRangePickerState.selectedEndDateMillis)
+                    startDate =
+                        kotlin.runCatching { formatter.format(dateRangePickerState.selectedStartDateMillis) }
+                            .getOrDefault("")
+                    endDate =
+                        kotlin.runCatching { formatter.format(dateRangePickerState.selectedEndDateMillis) }
+                            .getOrDefault("")
                     coroutineScope.launch {
                         bottomSheetState.hide()
-                        juiceVendorViewModel.getReportForDateInterval(
-                            startDate = startDate,
-                            endDate = endDate
-                        )
+                        if (startDate.isNotEmpty() && endDate.isNotEmpty()) {
+                            juiceVendorViewModel.getReportForDateInterval(
+                                startDate = startDate,
+                                endDate = endDate
+                            )
+                        }
                     }
                 }
             }
