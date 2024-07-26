@@ -57,8 +57,9 @@ import common.composables.ErrorComposable
 import common.composables.LoadingComposable
 import common.extensions.removeSpacesAndLowerCase
 import data.Config
+import juices.viewModels.ExportReportUiState
+import juices.viewModels.GenerateReportUiState
 import juices.viewModels.JuiceVendorViewModel
-import juices.viewModels.ReportsUiState
 import juicevendor.composeapp.generated.resources.Res
 import juicevendor.composeapp.generated.resources.ic_apple
 import juicevendor.composeapp.generated.resources.ic_banana
@@ -92,7 +93,8 @@ fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
     val dateRangePickerState = rememberDateRangePickerState()
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
-    val reportUiState = juiceVendorViewModel.reportsUiState.collectAsState()
+    val generateReportUiState = juiceVendorViewModel.generateReportUiState.collectAsState()
+    val exportReportUiState = juiceVendorViewModel.exportReportUiState.collectAsState()
 
     LaunchedEffect(Unit) {
         juiceVendorViewModel.getReportForDateInterval(startDate = startDate, endDate = endDate)
@@ -141,8 +143,8 @@ fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
                     bottomSheetState = bottomSheetState
                 )
                 Spacer(modifier = Modifier.height(10.dp))
-                when (reportUiState.value) {
-                    is ReportsUiState.Loading -> {
+                when (generateReportUiState.value) {
+                    is GenerateReportUiState.Loading -> {
                         Row(
                             modifier = Modifier.align(Alignment.CenterHorizontally).padding(20.dp)
                         ) {
@@ -150,11 +152,11 @@ fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
                         }
                     }
 
-                    is ReportsUiState.Success -> {
+                    is GenerateReportUiState.Success -> {
                         val reportHashMap =
-                            (reportUiState.value as ReportsUiState.Success).reportsHashMap
+                            (generateReportUiState.value as GenerateReportUiState.Success).reportsHashMap
                         totalOrderCount =
-                            (reportUiState.value as ReportsUiState.Success).totalOrderCount
+                            (generateReportUiState.value as GenerateReportUiState.Success).totalOrderCount
                         if (reportHashMap.isEmpty()) {
                             Row(
                                 modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -183,6 +185,16 @@ fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
                                     contentScale = ContentScale.Fit
                                 )
                             }
+
+                            when (exportReportUiState.value) {
+                                is ExportReportUiState.NoUserActionState -> {}
+                                is ExportReportUiState.ExportInProgress -> {}
+                                is ExportReportUiState.Success -> {
+                                }
+
+                                is ExportReportUiState.Error -> {}
+                            }
+
                         }
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
@@ -200,7 +212,7 @@ fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
                         }
                     }
 
-                    is ReportsUiState.Error -> {
+                    is GenerateReportUiState.Error -> {
                         ErrorComposable()
                     }
                 }

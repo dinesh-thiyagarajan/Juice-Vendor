@@ -6,6 +6,7 @@ import com.google.firebase.database.ValueEventListener
 import data.Config
 import data.Drink
 import data.Order
+import data.Report
 import data.Response
 import data.Status
 import dev.gitlive.firebase.Firebase
@@ -13,6 +14,7 @@ import dev.gitlive.firebase.database.FirebaseDatabase
 import dev.gitlive.firebase.database.database
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -167,6 +169,35 @@ class JuiceVendorRepository(
         } catch (ex: Exception) {
             return Response(status = Status.Error, message = ex.message)
         }
+    }
+
+    suspend fun prepareJuiceDataForExport(reportHashMap: HashMap<String, Report>) = flow {
+        val exportData = StringBuilder()
+        val dateFormatter = SimpleDateFormat(Config.DATE_FORMAT)
+        reportHashMap.values.map {
+            it.orderDate = dateFormatter.format(
+                Date(it.orderTimeStamp)
+            )
+        }
+        val reportsByDate =
+            reportHashMap.values.groupBy {
+                it.orderDate
+            }
+
+        val juiceNames =
+            reportHashMap.values.map { it.drinkName }
+                .distinct()
+        val header = listOf("Date") + juiceNames + "Total"
+        exportData.appendLine(header.joinToString(","))
+        reportsByDate.forEach { (date, reports) ->
+            val countsByJuice = juiceNames.map { juiceName ->
+                reports.find { it.drinkName == juiceName }?.orderCount ?: 0
+            }
+            val total = countsByJuice.sum()
+            val row = listOf(date.toString()) + countsByJuice + total
+            exportData.appendLine(row.joinToString(","))
+        }
+        emit(exportData.toString())
     }
 
 }

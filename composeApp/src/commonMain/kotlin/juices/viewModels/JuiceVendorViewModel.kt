@@ -1,11 +1,13 @@
 package juices.viewModels
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import data.Drink
 import data.Order
 import data.Report
 import data.Status
+import file.FilesRepository
 import juices.repositories.JuiceVendorRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +16,10 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorRepository) : ViewModel() {
+class JuiceVendorViewModel(
+    private val juiceVendorRepository: JuiceVendorRepository,
+    private val filesRepository: FilesRepository,
+) : ViewModel() {
 
     val orders: StateFlow<List<Order>> get() = _orders
     private val _orders: MutableStateFlow<List<Order>> = MutableStateFlow(
@@ -32,9 +37,13 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
     val totalOrdersCount: StateFlow<Int> get() = _totalOrdersCount
     private val _totalOrdersCount: MutableStateFlow<Int> = MutableStateFlow(0)
 
-    val reportsUiState: StateFlow<ReportsUiState> get() = _reportsUiState
-    private val _reportsUiState: MutableStateFlow<ReportsUiState> =
-        MutableStateFlow(ReportsUiState.Loading)
+    val generateReportUiState: StateFlow<GenerateReportUiState> get() = _generateReportUiState
+    private val _generateReportUiState: MutableStateFlow<GenerateReportUiState> =
+        MutableStateFlow(GenerateReportUiState.Loading)
+
+    val exportReportUiState: StateFlow<ExportReportUiState> get() = _exportReportUiState
+    private val _exportReportUiState: MutableStateFlow<ExportReportUiState> =
+        MutableStateFlow(ExportReportUiState.NoUserActionState)
 
     val showAddJuiceComposable: StateFlow<Boolean> get() = _showAddJuiceComposable
     private val _showAddJuiceComposable: MutableStateFlow<Boolean> = MutableStateFlow(
@@ -104,20 +113,31 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
         }
     }
 
+    // TODO Move these report related functions to separate Report ViewModel
     suspend fun onReportExportButtonClicked() {
-
+        viewModelScope.launch(Dispatchers.Default) {
+            val reportHash =
+                (_generateReportUiState.value as GenerateReportUiState.Success).reportsHashMap
+            juiceVendorRepository.prepareJuiceDataForExport(reportHashMap = reportHash)
+                .collect { fileContent ->
+                    val fileResponse = filesRepository.createCSVFile(fileContent = fileContent)
+                    val fileUri = fileResponse.second
+                    //showReportShareOption.value =
+                }
+        }
     }
+
 
     suspend fun getReportForDateInterval(startDate: String, endDate: String) {
         viewModelScope.launch(Dispatchers.Default) {
-            _reportsUiState.value = ReportsUiState.Loading
+            _generateReportUiState.value = GenerateReportUiState.Loading
             val reportMap: HashMap<String, Report> = hashMapOf()
             val datesList = getInBetweenDates(startDate = startDate, endDate = endDate)
             val reportResponse =
                 juiceVendorRepository.getReportForDateInterval(datesList = datesList)
             when (reportResponse.status) {
                 Status.Loading -> {
-                    _reportsUiState.value = ReportsUiState.Loading
+                    _generateReportUiState.value = GenerateReportUiState.Loading
                 }
 
                 Status.Success -> {
@@ -128,7 +148,8 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
                             reportMap[order.drinkId] = Report(
                                 drinkId = order.drinkId,
                                 drinkName = order.drinkName,
-                                orderCount = order.orderCount
+                                orderCount = order.orderCount,
+                                orderTimeStamp = order.orderTimeStamp
                             )
                         } else {
                             // If a report already exists, update the order count
@@ -137,15 +158,15 @@ class JuiceVendorViewModel(private val juiceVendorRepository: JuiceVendorReposit
                             )
                         }
                     }
-                    _reportsUiState.value = ReportsUiState.Success(
+                    _generateReportUiState.value = GenerateReportUiState.Success(
                         reportsHashMap = reportMap,
                         totalOrderCount = reportResponse.data?.first ?: 0
                     )
                 }
 
                 Status.Error -> {
-                    _reportsUiState.value =
-                        ReportsUiState.Error(message = "Error while fetching the report")
+                    _generateReportUiState.value =
+                        GenerateReportUiState.Error(message = "Error while fetching the report")
                 }
             }
         }
@@ -196,10 +217,17 @@ sealed interface DrinksUiState {
     data class Error(val message: String?) : DrinksUiState
 }
 
-sealed interface ReportsUiState {
-    data object Loading : ReportsUiState
+sealed interface GenerateReportUiState {
+    data object Loading : GenerateReportUiState
     data class Success(val reportsHashMap: HashMap<String, Report>, val totalOrderCount: Int) :
-        ReportsUiState
+        GenerateReportUiState
 
-    data class Error(val message: String?) : ReportsUiState
+    data class Error(val message: String?) : GenerateReportUiState
+}
+
+sealed interface ExportReportUiState {
+    data object NoUserActionState : ExportReportUiState
+    data object ExportInProgress : ExportReportUiState
+    data class Success(val uri: Uri) : ExportReportUiState
+    data class Error(val errorMsg: String) : ExportReportUiState
 }
