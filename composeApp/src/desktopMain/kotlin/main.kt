@@ -41,6 +41,11 @@ fun main() = application {
 
         Firebase.initialize(Application(), options)
 
-        JuiceVendorApp(JuiceVendorViewModel(JuiceVendorRepository()), AuthViewModel(AuthRepository()))
+        JuiceVendorApp(
+            JuiceVendorViewModel(
+                juiceVendorRepository = JuiceVendorRepository(),
+                filesRepository = null
+            ), AuthViewModel(AuthRepository())
+        )
     }
 }

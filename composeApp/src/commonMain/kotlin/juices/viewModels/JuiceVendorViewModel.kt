@@ -19,7 +19,7 @@ import java.time.format.DateTimeFormatter
 
 class JuiceVendorViewModel(
     private val juiceVendorRepository: JuiceVendorRepository,
-    private val filesRepository: FilesRepository,
+    private val filesRepository: FilesRepository?,
 ) : ViewModel() {
 
     val orders: StateFlow<List<Order>> get() = _orders
@@ -121,7 +121,7 @@ class JuiceVendorViewModel(
                 (_generateReportUiState.value as GenerateReportUiState.Success).reportsHashMap
             juiceVendorRepository.prepareJuiceDataForExport(reportHashMap = reportHash)
                 .collect { fileContent ->
-                    val generatedFile = filesRepository.createCSVFile(fileContent = fileContent)
+                    val generatedFile = filesRepository?.createCSVFile(fileContent = fileContent)
                     generatedFile?.let {
                         Platform.fileSharingService.shareFile(it)
                     }
@@ -223,7 +223,6 @@ sealed interface GenerateReportUiState {
     data object Loading : GenerateReportUiState
     data class Success(val reportsHashMap: HashMap<String, Report>, val totalOrderCount: Int) :
         GenerateReportUiState
-
     data class Error(val message: String?) : GenerateReportUiState
 }
 

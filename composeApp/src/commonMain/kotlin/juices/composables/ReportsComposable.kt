@@ -166,26 +166,38 @@ fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
                             }
                         }
                         if (reportHashMap.isNotEmpty()) {
-                            Row(
-                                modifier = Modifier.align(Alignment.End)
-                                    .clickable {
-                                        coroutineScope.launch {
-                                            juiceVendorViewModel.onReportExportButtonClicked()
-                                        }
+                            Row(modifier = Modifier.align(Alignment.End)) {
+                                Column {
+                                    Row(
+                                        modifier = Modifier.align(Alignment.End)
+                                            .clickable {
+                                                coroutineScope.launch {
+                                                    juiceVendorViewModel.onReportExportButtonClicked()
+                                                }
+                                            }
+                                            .padding(horizontal = 20.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            "Export",
+                                            textAlign = TextAlign.Center,
+                                            fontSize = 15.sp
+                                        )
+                                        Image(
+                                            painter = painterResource(Res.drawable.ic_export),
+                                            contentDescription = "export",
+                                            modifier = Modifier.size(15.dp),
+                                            contentScale = ContentScale.Fit
+                                        )
                                     }
-                                    .padding(horizontal = 20.dp, vertical = 5.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text("Export", textAlign = TextAlign.Center)
-                                Spacer(modifier = Modifier.width(5.dp))
-                                Image(
-                                    painter = painterResource(Res.drawable.ic_export),
-                                    contentDescription = "export",
-                                    modifier = Modifier.size(15.dp),
-                                    contentScale = ContentScale.Fit
-                                )
+                                    Spacer(modifier = Modifier.height(5.dp))
+                                    Text(
+                                        "(works only on android for now)",
+                                        textAlign = TextAlign.Center,
+                                        fontSize = 8.sp
+                                    )
+                                }
                             }
-
                             when (exportReportUiState.value) {
                                 is ExportReportUiState.NoUserActionState -> {}
                                 is ExportReportUiState.ExportInProgress -> {}
