@@ -9,5 +9,6 @@ data class Order(
     var orderCount: Int = 0,
     @field:JvmField // this annotation is needed if the boolean prefix starts with "is"
     val isAvailable: Boolean = true,
-    val orderTimeStamp: Long = 0L
+    val orderTimeStamp: Long = 0L,
+    var orderDate: String? = null
 )

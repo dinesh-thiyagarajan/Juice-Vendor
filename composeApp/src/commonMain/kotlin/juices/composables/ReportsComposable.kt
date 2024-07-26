@@ -172,7 +172,7 @@ fun ReportsComposable(juiceVendorViewModel: JuiceVendorViewModel) {
                                         modifier = Modifier.align(Alignment.End)
                                             .clickable {
                                                 coroutineScope.launch {
-                                                    juiceVendorViewModel.onReportExportButtonClicked()
+                                                    juiceVendorViewModel.onReportExportButtonClicked(startDate = startDate, endDate = endDate)
                                                 }
                                             }
                                             .padding(horizontal = 20.dp),

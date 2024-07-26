@@ -6,7 +6,6 @@ import com.google.firebase.database.ValueEventListener
 import data.Config
 import data.Drink
 import data.Order
-import data.Report
 import data.Response
 import data.Status
 import dev.gitlive.firebase.Firebase
@@ -137,7 +136,10 @@ class JuiceVendorRepository(
         }
     }
 
-    suspend fun getReportForDateInterval(datesList: List<String>): Response<Pair<Int, MutableList<Order>>> {
+    suspend fun getReportForDateInterval(
+        datesList: List<String>,
+        dateFormatter: (Long) -> String
+    ): Response<Pair<Int, MutableList<Order>>> {
         val ordersList = mutableListOf<Order>()
         var totalOrderCount = 0
         try {
@@ -152,13 +154,14 @@ class JuiceVendorRepository(
                             val drinkId = value["drinkId"]
                             val drinkName = value["drinkName"]
                             val orderCount = value["orderCount"].toString().toIntOrNull() ?: 0
-                            val orderTimeStamp = value["orderTimeStamp"]
+                            val orderTimeStamp = value["orderTimeStamp"] as Long
                             totalOrderCount += orderCount
                             val order = Order(
                                 drinkId = drinkId.toString(),
                                 drinkName = drinkName.toString(),
-                                orderTimeStamp = orderTimeStamp as Long,
-                                orderCount = orderCount
+                                orderTimeStamp = orderTimeStamp,
+                                orderCount = orderCount,
+                                orderDate = dateFormatter.invoke(orderTimeStamp)
                             )
                             ordersList.add(order)
                         }
@@ -171,32 +174,29 @@ class JuiceVendorRepository(
         }
     }
 
-    suspend fun prepareJuiceDataForExport(reportHashMap: HashMap<String, Report>) = flow {
+    suspend fun prepareJuiceDataForExport(ordersList: MutableList<Order>) = flow {
         val exportData = StringBuilder()
-        val dateFormatter = SimpleDateFormat(Config.DATE_FORMAT)
-        reportHashMap.values.map {
-            it.orderDate = dateFormatter.format(
-                Date(it.orderTimeStamp)
-            )
-        }
-        val reportsByDate =
-            reportHashMap.values.groupBy {
-                it.orderDate
-            }
+        // Group orders by their formatted date
+        val reportsByDate = ordersList.groupBy { it.orderDate }
 
-        val juiceNames =
-            reportHashMap.values.map { it.drinkName }
-                .distinct()
+        // Extract unique juice names
+        val juiceNames = ordersList.map { it.drinkName }.distinct()
+
+        // Create the header row
         val header = listOf("Date") + juiceNames + "Total"
         exportData.appendLine(header.joinToString(","))
+
+        // Generate the CSV data for each date group
         reportsByDate.forEach { (date, reports) ->
             val countsByJuice = juiceNames.map { juiceName ->
-                reports.find { it.drinkName == juiceName }?.orderCount ?: 0
+                reports.filter { it.drinkName == juiceName }.sumBy { it.orderCount }
             }
             val total = countsByJuice.sum()
             val row = listOf(date.toString()) + countsByJuice + total
             exportData.appendLine(row.joinToString(","))
         }
+
+        // Emit the generated CSV data
         emit(exportData.toString())
     }
 

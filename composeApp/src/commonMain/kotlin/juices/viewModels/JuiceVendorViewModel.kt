@@ -3,6 +3,7 @@ package juices.viewModels
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import data.Config
 import data.Drink
 import data.Order
 import data.Report
@@ -14,8 +15,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Date
 
 class JuiceVendorViewModel(
     private val juiceVendorRepository: JuiceVendorRepository,
@@ -73,6 +76,9 @@ class JuiceVendorViewModel(
         _showAddNewUserComposable.value = status
     }
 
+    private val rawReportResponse: MutableList<Order> = mutableListOf()
+    private val dateFormatter = SimpleDateFormat(Config.DATE_FORMAT)
+
     fun onJuiceAvailabilityUpdated(availability: Boolean, drinkId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val updatedList = drinksList.value.map { drink ->
@@ -115,13 +121,15 @@ class JuiceVendorViewModel(
     }
 
     // TODO Move these report related functions to separate Report ViewModel
-    suspend fun onReportExportButtonClicked() {
+    suspend fun onReportExportButtonClicked(startDate: String, endDate: String) {
         viewModelScope.launch(Dispatchers.Default) {
-            val reportHash =
-                (_generateReportUiState.value as GenerateReportUiState.Success).reportsHashMap
-            juiceVendorRepository.prepareJuiceDataForExport(reportHashMap = reportHash)
+            juiceVendorRepository.prepareJuiceDataForExport(rawReportResponse)
                 .collect { fileContent ->
-                    val generatedFile = filesRepository?.createCSVFile(fileContent = fileContent)
+                    val generatedFile = filesRepository?.createCSVFile(
+                        fileContent = fileContent,
+                        startDate = startDate,
+                        endDate = endDate
+                    )
                     generatedFile?.let {
                         Platform.fileSharingService.shareFile(it)
                     }
@@ -129,6 +137,8 @@ class JuiceVendorViewModel(
         }
     }
 
+    private fun convertOrderTimeStampToDateFormat(timeStamp: Long): String =
+        dateFormatter.format(Date(timeStamp))
 
     suspend fun getReportForDateInterval(startDate: String, endDate: String) {
         viewModelScope.launch(Dispatchers.Default) {
@@ -136,13 +146,20 @@ class JuiceVendorViewModel(
             val reportMap: HashMap<String, Report> = hashMapOf()
             val datesList = getInBetweenDates(startDate = startDate, endDate = endDate)
             val reportResponse =
-                juiceVendorRepository.getReportForDateInterval(datesList = datesList)
+                juiceVendorRepository.getReportForDateInterval(
+                    datesList = datesList,
+                    dateFormatter = ::convertOrderTimeStampToDateFormat
+                )
             when (reportResponse.status) {
                 Status.Loading -> {
                     _generateReportUiState.value = GenerateReportUiState.Loading
                 }
 
                 Status.Success -> {
+                    reportResponse.data?.second?.let {
+                        rawReportResponse.clear()
+                        rawReportResponse.addAll(it)
+                    }
                     reportResponse.data?.second?.forEach { order ->
                         val currentReport = reportMap[order.drinkId]
                         if (currentReport == null) {
@@ -223,6 +240,7 @@ sealed interface GenerateReportUiState {
     data object Loading : GenerateReportUiState
     data class Success(val reportsHashMap: HashMap<String, Report>, val totalOrderCount: Int) :
         GenerateReportUiState
+
     data class Error(val message: String?) : GenerateReportUiState
 }
 
