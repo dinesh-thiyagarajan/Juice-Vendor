@@ -30,6 +30,7 @@ import auth.composables.FetchingLoginStatusComposable
 import auth.composables.LoginComposable
 import auth.viewModels.AuthUiState
 import auth.viewModels.AuthViewModel
+import common.theme.primary_wave_blue
 import juices.composables.AddNewJuiceComposable
 import juices.composables.OrdersListComposable
 import juices.composables.ReportsComposable
@@ -64,81 +65,89 @@ fun JuiceVendorApp(juiceVendorViewModel: JuiceVendorViewModel, authViewModel: Au
 
             is AuthUiState.LoggedIn -> {
                 Column {
-                    if (showAddJuiceComposable.value) {
-                        AddNewJuiceComposable(
-                            juiceVendorViewModel = juiceVendorViewModel,
-                            (authUiState.value as AuthUiState.LoggedIn).isAdmin
-                        )
-                    } else if (showReportsComposable.value) {
-                        ReportsComposable(juiceVendorViewModel = juiceVendorViewModel)
-                    } else if (showAddNewUserComposable.value) {
-                        AddNewUserComposable(
-                            juiceVendorViewModel = juiceVendorViewModel,
-                            authViewModel = authViewModel
-                        )
-                    } else {
-                        val isAdmin = (authUiState.value as AuthUiState.LoggedIn).isAdmin
-                        Row(
-                            modifier = Modifier.padding(20.dp).fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row {
-                                Image(
-                                    painter = painterResource(Res.drawable.ic_refresh),
-                                    contentDescription = "refresh juice orders",
+                    when {
+                        showAddJuiceComposable.value -> {
+                            AddNewJuiceComposable(
+                                juiceVendorViewModel = juiceVendorViewModel,
+                                (authUiState.value as AuthUiState.LoggedIn).isAdmin
+                            )
+                        }
 
-                                    modifier = Modifier.size(30.dp).clickable {
-                                        coroutineScope.launch {
-                                            juiceVendorViewModel.getDrinkOrders()
-                                        }
-                                    },
-                                    contentScale = ContentScale.Fit
-                                )
+                        showReportsComposable.value -> {
+                            ReportsComposable(juiceVendorViewModel = juiceVendorViewModel)
+                        }
 
-                                Spacer(modifier = Modifier.width(10.dp))
+                        showAddNewUserComposable.value -> {
+                            AddNewUserComposable(
+                                juiceVendorViewModel = juiceVendorViewModel,
+                                authViewModel = authViewModel
+                            )
+                        }
 
-                                Image(
-                                    painter = painterResource(Res.drawable.ic_report),
-                                    contentDescription = "see reports",
-                                    modifier = Modifier.size(30.dp).clickable {
-                                        coroutineScope.launch {
-                                            juiceVendorViewModel.updateReportsComposableVisibility(
-                                                status = true
-                                            )
-                                        }
-                                    },
-                                    contentScale = ContentScale.Fit
-                                )
-                            }
-
-                            Row {
-                                if (isAdmin) {
+                        else -> {
+                            val isAdmin = (authUiState.value as AuthUiState.LoggedIn).isAdmin
+                            Row(
+                                modifier = Modifier.padding(20.dp).fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row {
                                     Image(
-                                        painter = painterResource(Res.drawable.ic_add_user),
-                                        contentDescription = "add user",
+                                        painter = painterResource(Res.drawable.ic_refresh),
+                                        contentDescription = "refresh juice orders",
+
                                         modifier = Modifier.size(30.dp).clickable {
-                                            juiceVendorViewModel.updateAddNewUserComposableVisibility(
+                                            coroutineScope.launch {
+                                                juiceVendorViewModel.getDrinkOrders()
+                                            }
+                                        },
+                                        contentScale = ContentScale.Fit
+                                    )
+
+                                    Spacer(modifier = Modifier.width(10.dp))
+
+                                    Image(
+                                        painter = painterResource(Res.drawable.ic_report),
+                                        contentDescription = "see reports",
+                                        modifier = Modifier.size(30.dp).clickable {
+                                            coroutineScope.launch {
+                                                juiceVendorViewModel.updateReportsComposableVisibility(
+                                                    status = true
+                                                )
+                                            }
+                                        },
+                                        contentScale = ContentScale.Fit
+                                    )
+                                }
+
+                                Row {
+                                    if (isAdmin) {
+                                        Image(
+                                            painter = painterResource(Res.drawable.ic_add_user),
+                                            contentDescription = "add user",
+                                            modifier = Modifier.size(30.dp).clickable {
+                                                juiceVendorViewModel.updateAddNewUserComposableVisibility(
+                                                    status = true
+                                                )
+                                            },
+                                            contentScale = ContentScale.Fit
+                                        )
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                    }
+                                    Image(
+                                        painter = painterResource(Res.drawable.juice_preparation),
+                                        contentDescription = "update juices list",
+                                        modifier = Modifier.size(30.dp).clickable {
+                                            juiceVendorViewModel.updateAddJuiceComposableVisibility(
                                                 status = true
                                             )
                                         },
                                         contentScale = ContentScale.Fit
                                     )
-                                    Spacer(modifier = Modifier.width(10.dp))
                                 }
-                                Image(
-                                    painter = painterResource(Res.drawable.juice_preparation),
-                                    contentDescription = "update juices list",
-                                    modifier = Modifier.size(30.dp).clickable {
-                                        juiceVendorViewModel.updateAddJuiceComposableVisibility(
-                                            status = true
-                                        )
-                                    },
-                                    contentScale = ContentScale.Fit
-                                )
-                            }
 
+                            }
+                            OrdersListComposable(juiceVendorViewModel)
                         }
-                        OrdersListComposable(juiceVendorViewModel)
                     }
                 }
             }
@@ -149,7 +158,7 @@ fun JuiceVendorApp(juiceVendorViewModel: JuiceVendorViewModel, authViewModel: Au
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(color = primary_wave_blue)
                     Spacer(modifier = Modifier.height(10.dp))
                     Text("Logging You In")
                 }
